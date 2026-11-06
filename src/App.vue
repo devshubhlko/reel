@@ -482,6 +482,111 @@
             </div>
           </div>
 
+          <!-- 4.6 Background Controls (Solid Color / Custom Image) -->
+          <div class="border-t border-slate-100 pt-3 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <span>Background</span>
+              </h3>
+              <!-- Mode Tabs: Color vs Image -->
+              <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  @click="bgConfig.type = 'color'"
+                  class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                  :class="bgConfig.type === 'color' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                >
+                  Color
+                </button>
+                <button
+                  type="button"
+                  @click="bgConfig.type = 'image'"
+                  class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                  :class="bgConfig.type === 'image' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                >
+                  Image
+                </button>
+              </div>
+            </div>
+
+            <!-- Panel for Solid Color -->
+            <div v-if="bgConfig.type === 'color'" class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5 transition-all">
+              <div class="bg-white/90 border border-amber-200/70 p-2.5 rounded-xl space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Solid Color</span>
+                  <div class="flex items-center gap-2">
+                    <input 
+                      v-model="bgConfig.color" 
+                      type="color" 
+                      class="w-7 h-7 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ bgConfig.color }}</span>
+                  </div>
+                </div>
+
+                <!-- Preset Color Swatches -->
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      v-for="c in ['#ffffff', '#fafaf9', '#f1f5f9', '#fefce8', '#f0fdf4', '#fff1f2', '#1e293b']"
+                      :key="c"
+                      type="button"
+                      @click="bgConfig.color = c"
+                      class="w-6 h-6 rounded-md border transition-all cursor-pointer shadow-2xs hover:scale-110"
+                      :class="bgConfig.color.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-105' : 'border-slate-300'"
+                      :style="{ backgroundColor: c }"
+                      :title="c === '#ffffff' ? 'Pure White (Default)' : c"
+                    ></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel for Background Image -->
+            <div v-else class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5 transition-all">
+              <div class="bg-white/90 border border-amber-200/70 p-2.5 rounded-xl flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-12 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    <img v-if="bgConfig.imageUrl" :src="bgConfig.imageUrl" alt="BG Preview" class="w-full h-full object-cover" />
+                    <span v-else class="text-[10px] text-slate-400 font-bold">No Image</span>
+                  </div>
+                  <div>
+                    <span class="block text-xs font-bold text-slate-800">Background Image</span>
+                    <span class="text-[10px] text-slate-500">{{ bgConfig.imageUrl ? 'Custom image applied' : 'Upload any image for BG' }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <input 
+                    type="file" 
+                    ref="bgFileInput" 
+                    accept="image/*" 
+                    @change="onBgFileChange" 
+                    class="hidden" 
+                  />
+                  <button 
+                    type="button" 
+                    @click="triggerBgUpload" 
+                    class="py-1.5 px-2.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span>{{ bgConfig.imageUrl ? 'Change' : 'Upload' }}</span>
+                  </button>
+                  <button 
+                    v-if="bgConfig.imageUrl" 
+                    type="button" 
+                    @click="removeBgImage" 
+                    class="py-1.5 px-2 rounded-lg text-[11px] font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-all cursor-pointer"
+                    title="Remove background image"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- 5. Watermark Logo Controls (Center Overlay) -->
           <div class="border-t border-slate-100 pt-3 space-y-3">
             <div class="flex items-center justify-between">
@@ -1041,6 +1146,94 @@
                       @click="logoConfig.size = Math.min(400, logoConfig.size + 10)" 
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-base shrink-0 active:scale-90"
                     >+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Background Controls (Mobile) -->
+            <div class="border-t border-slate-100 pt-3 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider">Background</h3>
+                <!-- Mode Tabs: Color vs Image -->
+                <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                  <button
+                    type="button"
+                    @click="bgConfig.type = 'color'"
+                    class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                    :class="bgConfig.type === 'color' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'"
+                  >Color</button>
+                  <button
+                    type="button"
+                    @click="bgConfig.type = 'image'"
+                    class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                    :class="bgConfig.type === 'image' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'"
+                  >Image</button>
+                </div>
+              </div>
+
+              <!-- Mobile Solid Color Panel -->
+              <div v-if="bgConfig.type === 'color'" class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5">
+                <div class="bg-white/90 border border-amber-200/70 p-2.5 rounded-xl space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700">Solid Color</span>
+                    <div class="flex items-center gap-2">
+                      <input 
+                        v-model="bgConfig.color" 
+                        type="color" 
+                        class="w-7 h-7 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                      />
+                      <span class="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ bgConfig.color }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Presets -->
+                  <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                    <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                    <button
+                      v-for="c in ['#ffffff', '#fafaf9', '#f1f5f9', '#fefce8', '#f0fdf4', '#fff1f2', '#1e293b']"
+                      :key="'mob-bg-' + c"
+                      type="button"
+                      @click="bgConfig.color = c"
+                      class="w-6 h-6 rounded-md border transition-all cursor-pointer shadow-2xs"
+                      :class="bgConfig.color.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-105' : 'border-slate-300'"
+                      :style="{ backgroundColor: c }"
+                    ></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile Background Image Panel -->
+              <div v-else class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5">
+                <div class="bg-white/90 border border-amber-200/70 p-2 rounded-xl flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-12 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                      <img v-if="bgConfig.imageUrl" :src="bgConfig.imageUrl" alt="BG Preview" class="w-full h-full object-cover" />
+                      <span v-else class="text-[10px] text-slate-400 font-bold">No Image</span>
+                    </div>
+                    <div>
+                      <span class="block text-xs font-bold text-slate-800">Background Image</span>
+                      <span class="text-[10px] text-slate-500">{{ bgConfig.imageUrl ? 'Custom image' : 'No image' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1.5">
+                    <button 
+                      type="button" 
+                      @click="triggerBgUpload" 
+                      class="py-1.5 px-2.5 rounded-lg text-xs font-bold bg-amber-500 text-white shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                      <span>{{ bgConfig.imageUrl ? 'Change' : 'Upload' }}</span>
+                    </button>
+                    <button 
+                      v-if="bgConfig.imageUrl" 
+                      type="button" 
+                      @click="removeBgImage" 
+                      class="py-1.5 px-2 rounded-lg text-[11px] font-medium text-slate-500 hover:text-rose-600 border border-slate-200"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1697,6 +1890,48 @@ function resetLogoToDefault() {
   img.src = '/logo.png';
 }
 
+// Background Model (Solid Color or Uploaded Custom Image)
+const bgConfig = reactive({
+  type: 'color' as 'color' | 'image',
+  color: '#ffffff',
+  imageUrl: ''
+});
+
+let bgImg: HTMLImageElement | null = null;
+const bgFileInput = ref<HTMLInputElement | null>(null);
+
+function triggerBgUpload() {
+  bgFileInput.value?.click();
+}
+
+function onBgFileChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const result = event.target?.result as string;
+    if (!result) return;
+    bgConfig.imageUrl = result;
+    bgConfig.type = 'image';
+    const img = new Image();
+    img.onload = () => {
+      bgImg = img;
+      renderCanvas(-1, 4, 0.0, false, false, 1.0);
+    };
+    img.src = result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeBgImage() {
+  bgConfig.imageUrl = '';
+  bgConfig.type = 'color';
+  bgImg = null;
+  renderCanvas(-1, 4, 0.0, false, false, 1.0);
+}
+
 // Watermark Logo Model
 const watermark = reactive({
   enabled: true,
@@ -1761,7 +1996,7 @@ onMounted(async () => {
 
 // Watch inputs to re-render in real-time
 watch(
-  [quiz, style, offsets, watermark, logoConfig, selectedRatio],
+  [quiz, style, offsets, watermark, logoConfig, bgConfig, selectedRatio],
   async () => {
     await nextTick();
     renderCanvas(-1, 4, 0.0, false, false, 1.0);
@@ -1993,9 +2228,34 @@ function renderCanvasToCtx(
   const W = targetCanvas.width;
   const H = targetCanvas.height;
 
-  // 1. Pure White Background
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
+  // 1. Canvas Background (Solid Color or Uploaded Image)
+  if (bgConfig.type === 'image' && bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+    // Fallback solid base
+    ctx.fillStyle = bgConfig.color || '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw background image with aspect cover (fills full canvas perfectly without distortion)
+    ctx.save();
+    const imgW = bgImg.naturalWidth;
+    const imgH = bgImg.naturalHeight;
+    const canvasAspect = W / H;
+    const imgAspect = imgW / imgH;
+
+    let sx = 0, sy = 0, sW = imgW, sH = imgH;
+    if (imgAspect > canvasAspect) {
+      sW = imgH * canvasAspect;
+      sx = (imgW - sW) / 2;
+    } else {
+      sH = imgW / canvasAspect;
+      sy = (imgH - sH) / 2;
+    }
+    ctx.drawImage(bgImg, sx, sy, sW, sH, 0, 0, W, H);
+    ctx.restore();
+  } else {
+    // Solid Color (Default: #ffffff)
+    ctx.fillStyle = bgConfig.color || '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+  }
 
   // 2. Outer Black Frame Border (Drawn only if borderWidth > 0)
   const bw = Math.max(0, style.borderWidth);
