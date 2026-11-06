@@ -326,6 +326,182 @@
               </div>
             </div>
 
+            <!-- Option Badge Shape (5 Inbuilt Shapes: Default Circle) -->
+            <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Option Badge Shape</span>
+                <span class="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 capitalize font-bold">
+                  {{ style.optionShape }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-5 gap-1.5">
+                <button
+                  v-for="shp in [
+                    { id: 'circle', label: 'Circle', icon: '●' },
+                    { id: 'rounded-square', label: 'Squircle', icon: '▢' },
+                    { id: 'square', label: 'Square', icon: '■' },
+                    { id: 'hexagon', label: 'Hexagon', icon: '⬡' },
+                    { id: 'diamond', label: 'Diamond', icon: '◆' }
+                  ]"
+                  :key="'desk-shp-' + shp.id"
+                  type="button"
+                  @click="style.optionShape = shp.id as any"
+                  class="flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all cursor-pointer text-center"
+                  :class="style.optionShape === shp.id ? 'bg-amber-500 text-white border-amber-600 shadow-xs scale-102 font-bold' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                >
+                  <span class="text-base leading-none mb-1">{{ shp.icon }}</span>
+                  <span class="text-[10px] tracking-tight">{{ shp.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Colors: Question Type, Question, Option Text, Shape Fill & Shape Text -->
+            <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-2.5">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Custom Colors</h4>
+
+              <!-- 1. Question Type Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Type Heading Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.typeColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.typeColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed', '#ffffff']"
+                    :key="'desk-type-c-' + c"
+                    type="button"
+                    @click="style.typeColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.typeColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 2. Question Text Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Question Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.questionColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.questionColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#1e293b', '#dc2626', '#2563eb', '#059669', '#d97706', '#ffffff']"
+                    :key="'desk-q-c-' + c"
+                    type="button"
+                    @click="style.questionColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.questionColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 3. Option Text Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Option Text Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#1e293b', '#334155', '#2563eb', '#059669', '#dc2626', '#ffffff']"
+                    :key="'desk-opt-c-' + c"
+                    type="button"
+                    @click="style.optionColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 4. Option Shape Fill Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="block text-xs font-bold text-slate-700">Option Shape Fill</span>
+                    <span class="text-[10px] text-slate-400">Background of A, B, C, D</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionBadgeBgColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionBadgeBgColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#1f2937', '#000000', '#2563eb', '#059669', '#dc2626', '#d97706', '#7c3aed', '#ffffff']"
+                    :key="'desk-badge-bg-c-' + c"
+                    type="button"
+                    @click="style.optionBadgeBgColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionBadgeBgColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 5. Option Shape Letter Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="block text-xs font-bold text-slate-700">Option Shape Letter</span>
+                    <span class="text-[10px] text-slate-400">Letter inside shape</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionBadgeTextColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionBadgeTextColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#ffffff', '#000000', '#facc15', '#f87171', '#6ee7b7']"
+                    :key="'desk-badge-text-c-' + c"
+                    type="button"
+                    @click="style.optionBadgeTextColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionBadgeTextColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+            </div>
+
             <!-- Drag Switch & Target Selector -->
             <div class="space-y-2 pt-1 border-t border-slate-100">
               <div class="flex items-center justify-between text-xs font-medium text-slate-600">
@@ -979,6 +1155,182 @@
                     @click="logoConfig.size = Math.min(400, logoConfig.size + 10)" 
                     class="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-lg shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer select-none"
                   >+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Option Badge Shape (Mobile) -->
+            <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Option Badge Shape</span>
+                <span class="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 capitalize font-bold">
+                  {{ style.optionShape }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-5 gap-1.5">
+                <button
+                  v-for="shp in [
+                    { id: 'circle', label: 'Circle', icon: '●' },
+                    { id: 'rounded-square', label: 'Squircle', icon: '▢' },
+                    { id: 'square', label: 'Square', icon: '■' },
+                    { id: 'hexagon', label: 'Hexagon', icon: '⬡' },
+                    { id: 'diamond', label: 'Diamond', icon: '◆' }
+                  ]"
+                  :key="'mob-shp-' + shp.id"
+                  type="button"
+                  @click="style.optionShape = shp.id as any"
+                  class="flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all cursor-pointer text-center"
+                  :class="style.optionShape === shp.id ? 'bg-amber-500 text-white border-amber-600 shadow-xs scale-102 font-bold' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                >
+                  <span class="text-base leading-none mb-1">{{ shp.icon }}</span>
+                  <span class="text-[10px] tracking-tight">{{ shp.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Colors (Mobile) -->
+            <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl space-y-2.5">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Custom Colors</h4>
+
+              <!-- 1. Question Type Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Type Heading Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.typeColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.typeColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed', '#ffffff']"
+                    :key="'mob-type-c-' + c"
+                    type="button"
+                    @click="style.typeColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.typeColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 2. Question Text Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Question Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.questionColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.questionColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#1e293b', '#dc2626', '#2563eb', '#059669', '#d97706', '#ffffff']"
+                    :key="'mob-q-c-' + c"
+                    type="button"
+                    @click="style.questionColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.questionColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 3. Option Text Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700">Option Text Color</span>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#000000', '#1e293b', '#334155', '#2563eb', '#059669', '#dc2626', '#ffffff']"
+                    :key="'mob-opt-c-' + c"
+                    type="button"
+                    @click="style.optionColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 4. Option Shape Fill Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="block text-xs font-bold text-slate-700">Option Shape Fill</span>
+                    <span class="text-[10px] text-slate-400">Background of A, B, C, D</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionBadgeBgColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionBadgeBgColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#1f2937', '#000000', '#2563eb', '#059669', '#dc2626', '#d97706', '#7c3aed', '#ffffff']"
+                    :key="'mob-badge-bg-c-' + c"
+                    type="button"
+                    @click="style.optionBadgeBgColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionBadgeBgColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 5. Option Shape Letter Color -->
+              <div class="bg-white border border-slate-200/80 p-2.5 rounded-lg space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="block text-xs font-bold text-slate-700">Option Shape Letter</span>
+                    <span class="text-[10px] text-slate-400">Letter inside shape</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <input 
+                      v-model="style.optionBadgeTextColor" 
+                      type="color" 
+                      class="w-6 h-6 rounded-md border border-slate-300 cursor-pointer p-0 bg-transparent" 
+                    />
+                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{{ style.optionBadgeTextColor }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 flex-wrap">
+                  <span class="text-[10px] text-slate-400 font-semibold shrink-0">Presets:</span>
+                  <button
+                    v-for="c in ['#ffffff', '#000000', '#facc15', '#f87171', '#6ee7b7']"
+                    :key="'mob-badge-text-c-' + c"
+                    type="button"
+                    @click="style.optionBadgeTextColor = c"
+                    class="w-5 h-5 rounded-md border transition-all cursor-pointer shadow-2xs"
+                    :class="style.optionBadgeTextColor.toLowerCase() === c.toLowerCase() ? 'ring-2 ring-amber-500 border-amber-500 scale-110' : 'border-slate-300'"
+                    :style="{ backgroundColor: c }"
+                  ></button>
                 </div>
               </div>
             </div>
@@ -1642,14 +1994,55 @@ const quiz = reactive({
   correctOption: 1
 });
 
-// Styling Model (With Type font size slider added!)
+// 5 Inbuilt Shapes for Option Letter Badge
+type OptionShape = 'circle' | 'rounded-square' | 'square' | 'hexagon' | 'diamond';
+
+const savedStyleJson = (() => {
+  try {
+    const raw = localStorage.getItem('quiz_style_config');
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+})();
+
+// Styling Model (With Type font size slider, custom colors & 5 option shapes!)
 const style = reactive({
-  fontFamily: "'Kalam', cursive",
-  typeFontSize: 46,       // Independent Type Font Size
-  questionFontSize: 50,
-  optionFontSize: 36,
-  borderWidth: 2
+  fontFamily: savedStyleJson?.fontFamily || "'Kalam', cursive",
+  typeFontSize: savedStyleJson?.typeFontSize ?? 46,       // Independent Type Font Size
+  questionFontSize: savedStyleJson?.questionFontSize ?? 50,
+  optionFontSize: savedStyleJson?.optionFontSize ?? 36,
+  borderWidth: savedStyleJson?.borderWidth ?? 2,
+  typeColor: savedStyleJson?.typeColor || '#000000',
+  questionColor: savedStyleJson?.questionColor || '#000000',
+  optionColor: savedStyleJson?.optionColor || '#000000',
+  optionBadgeBgColor: savedStyleJson?.optionBadgeBgColor || '#1f2937',
+  optionBadgeTextColor: savedStyleJson?.optionBadgeTextColor || '#ffffff',
+  optionShape: (savedStyleJson?.optionShape as OptionShape) || 'circle'
 });
+
+// Watch style changes to auto-persist to localStorage
+watch(
+  style,
+  (newStyle) => {
+    try {
+      localStorage.setItem('quiz_style_config', JSON.stringify({
+        fontFamily: newStyle.fontFamily,
+        typeFontSize: newStyle.typeFontSize,
+        questionFontSize: newStyle.questionFontSize,
+        optionFontSize: newStyle.optionFontSize,
+        borderWidth: newStyle.borderWidth,
+        typeColor: newStyle.typeColor,
+        questionColor: newStyle.questionColor,
+        optionColor: newStyle.optionColor,
+        optionBadgeBgColor: newStyle.optionBadgeBgColor,
+        optionBadgeTextColor: newStyle.optionBadgeTextColor,
+        optionShape: newStyle.optionShape
+      }));
+    } catch (_) {}
+  },
+  { deep: true }
+);
 
 // ==========================================
 // GOOGLE FONTS DEVELOPER API (Devanagari/Hindi)
@@ -2176,6 +2569,12 @@ function resetToExactSample() {
   style.questionFontSize = 50;
   style.optionFontSize = 36;
   style.borderWidth = 4;
+  style.typeColor = '#000000';
+  style.questionColor = '#000000';
+  style.optionColor = '#000000';
+  style.optionBadgeBgColor = '#1f2937';
+  style.optionBadgeTextColor = '#ffffff';
+  style.optionShape = 'circle';
   resetPositions();
 }
 
@@ -2363,6 +2762,61 @@ function roundRect(
   ctx.closePath();
 }
 
+// Helper: Draw 5 Inbuilt Shapes for Option Letter Badge (Circle, Squircle, Square, Hexagon, Diamond)
+function drawOptionShape(
+  ctx: CanvasRenderingContext2D,
+  shape: OptionShape,
+  cx: number,
+  cy: number,
+  size: number
+) {
+  const r = size / 2;
+  ctx.beginPath();
+  switch (shape) {
+    case 'circle': {
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      break;
+    }
+    case 'rounded-square': {
+      const x = cx - r;
+      const y = cy - r;
+      const cornerR = r * 0.35;
+      roundRect(ctx, x, y, size, size, cornerR);
+      break;
+    }
+    case 'square': {
+      const x = cx - r;
+      const y = cy - r;
+      ctx.rect(x, y, size, size);
+      break;
+    }
+    case 'hexagon': {
+      for (let s = 0; s < 6; s++) {
+        const angle = (s * Math.PI) / 3 - Math.PI / 6;
+        const hx = cx + r * Math.cos(angle);
+        const hy = cy + r * Math.sin(angle);
+        if (s === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+      }
+      ctx.closePath();
+      break;
+    }
+    case 'diamond': {
+      const dr = r * 1.05;
+      ctx.moveTo(cx, cy - dr);
+      ctx.lineTo(cx + dr, cy);
+      ctx.lineTo(cx, cy + dr);
+      ctx.lineTo(cx - dr, cy);
+      ctx.closePath();
+      break;
+    }
+    default: {
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      break;
+    }
+  }
+}
+
 // Helper: Normalize options progress (supports number[] or legacy count number 0..4)
 function normalizeOptsProgress(opts: number[] | number | undefined): number[] {
   if (Array.isArray(opts)) return opts;
@@ -2444,7 +2898,7 @@ function renderCanvasToCtx(
   const typeBaseY = (isReel ? 120 : isLandscape ? 40 : 55) + offsets.typeY;
 
   ctx.save();
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = style.typeColor || '#000000';
   ctx.font = `700 ${style.typeFontSize}px ${style.fontFamily}`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
@@ -2482,7 +2936,7 @@ function renderCanvasToCtx(
   const fullQuestion = quiz.question || 'प्रश्न यहाँ दिखाई देगा...';
 
   ctx.save();
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = style.questionColor || '#000000';
   ctx.font = `700 ${style.questionFontSize}px ${style.fontFamily}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -2516,15 +2970,19 @@ function renderCanvasToCtx(
     ctx.restore();
   }
 
-  // 7. Four Options with Canva Pan Animation (Slide in from Left →) & Rich Pulse
+  // 7. Four Options with Canva Pan Animation (Slide in from Left →) & Shape Badge
   const optW = isLandscape ? 1400 : 910;
   const optX = (W - optW) / 2 + offsets.optionsX;
   const optGap = isReel ? 28 : isLandscape ? 16 : 16;
   const optionsStartY = (isReel ? 780 : isLandscape ? 400 : 430) + offsets.optionsY;
   const letters = ['A', 'B', 'C', 'D'];
 
+  const shapeSize = isReel ? 68 : isLandscape ? 58 : 64;
+  const shapeMarginLeft = 14;
+  const textStartX = optX + shapeMarginLeft + shapeSize + (isReel ? 26 : 20);
+  const maxTextAvailableWidth = optW - (shapeMarginLeft + shapeSize + 40);
+
   ctx.font = `700 ${style.optionFontSize}px ${style.fontFamily}`;
-  const maxTextAvailableWidth = optW - 190;
 
   const normalizedOpts = normalizeOptsProgress(optsProgress);
 
@@ -2538,8 +2996,7 @@ function renderCanvasToCtx(
     const lineH = style.optionFontSize * 1.25;
     
     const contentH = optLines.length * lineH;
-    const optH = Math.max(isReel ? 88 : 76, contentH + 28);
-    const optRadius = Math.min(38, optH / 2);
+    const optH = Math.max(isReel ? 84 : 72, contentH + 24);
 
     const isCorrect = (quiz.correctOption === i + 1);
     const isHighlighted = revealCorrect && isCorrect;
@@ -2563,54 +3020,45 @@ function renderCanvasToCtx(
         ctx.scale(pulseScale, pulseScale);
         ctx.translate(-cx, -cy);
 
+        // Highlight pill background for correct answer only
         ctx.fillStyle = '#dcfce7';
-        roundRect(ctx, optX, currentY, optW, optH, optRadius);
+        roundRect(ctx, optX, currentY, optW, optH, optH / 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#15803d';
-        ctx.lineWidth = 4.5;
-        roundRect(ctx, optX, currentY, optW, optH, optRadius);
-        ctx.stroke();
-      } else {
-        const optBgColor = (watermark.enabled && watermark.transparentOptions) 
-          ? 'rgba(255, 255, 255, 0.45)' 
-          : '#ffffff';
-        ctx.fillStyle = optBgColor;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2.5;
-        roundRect(ctx, optX, currentY, optW, optH, optRadius);
-        ctx.fill();
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 3;
+        roundRect(ctx, optX, currentY, optW, optH, optH / 2);
         ctx.stroke();
       }
 
-      // Left Badge (A, B, C, D)
-      const badgeW = 145;
-      const badgeH = 64;
-      const badgeX = optX + 8;
-      const badgeY = currentY + (optH - badgeH) / 2;
+      // Draw Option Shape (Circle [default], Squircle, Square, Hexagon, Diamond)
+      const shapeCenterX = optX + shapeMarginLeft + shapeSize / 2;
+      const shapeCenterY = currentY + optH / 2;
 
-      ctx.fillStyle = isHighlighted ? '#15803d' : '#1f2937';
-      roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+      ctx.save();
+      const badgeBgColor = isHighlighted ? '#16a34a' : (style.optionBadgeBgColor || '#1f2937');
+      ctx.fillStyle = badgeBgColor;
+      drawOptionShape(ctx, style.optionShape || 'circle', shapeCenterX, shapeCenterY, shapeSize);
       ctx.fill();
 
-      // Letter text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '800 32px sans-serif';
+      // Shape Letter (A, B, C, D)
+      const badgeTextColor = isHighlighted ? '#ffffff' : (style.optionBadgeTextColor || '#ffffff');
+      ctx.fillStyle = badgeTextColor;
+      ctx.font = `800 ${isReel ? 30 : 26}px sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(letters[i], badgeX + badgeW / 2, badgeY + badgeH / 2 + 1);
+      ctx.fillText(letters[i], shapeCenterX, shapeCenterY + 1);
+      ctx.restore();
 
-      // Render Option Text
-      ctx.fillStyle = isHighlighted ? '#14532d' : '#000000';
+      // Render Option Name / Text (Aligned cleanly to left, customizable color)
+      ctx.fillStyle = isHighlighted ? '#15803d' : (style.optionColor || '#000000');
       ctx.font = `700 ${style.optionFontSize}px ${style.fontFamily}`;
-      ctx.textAlign = 'center';
+      ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
 
-      const textCenterX = optX + 160 + maxTextAvailableWidth / 2;
       const startTextY = currentY + (optH - (optLines.length - 1) * lineH) / 2;
-
       for (let l = 0; l < optLines.length; l++) {
-        ctx.fillText(optLines[l], textCenterX, startTextY + l * lineH);
+        ctx.fillText(optLines[l], textStartX, startTextY + l * lineH);
       }
 
       ctx.restore();
