@@ -3649,14 +3649,14 @@ async function startBulletproofVideoGeneration() {
       const timerEnd = timerStart + timerCountdown;
 
       const revealStart = timerEnd;
-      const corrSoundLead = 1.25;
+      const corrSoundLead = 0.35; // Chime rings and voice starts right away
       const corrSpeechStart = revealStart + corrSoundLead;
-      const revealDuration = corrSoundLead + corrAudio.duration + 1.2;
+      const revealDuration = corrSoundLead + corrAudio.duration + 0.25; // Clean 0.25s buffer after speech finishes
       const contentDuration = revealStart + revealDuration;
 
-      // 2-second pause after question if multiple questions exist and not last
+      // 2nd question turant aaye just after option sahi batane ke
       const isLastQuestion = (qIdx === quizList.length - 1);
-      const pauseAfter = isLastQuestion ? 0.6 : 2.0;
+      const pauseAfter = isLastQuestion ? 0.35 : 0.0;
       const segmentDuration = contentDuration + pauseAfter;
 
       const segStartTime = currentTimeline;
@@ -3686,7 +3686,7 @@ async function startBulletproofVideoGeneration() {
         { buffer: opt2Audio.buffer, startSec: segStartTime + opt2Start },
         { buffer: opt3Audio.buffer, startSec: segStartTime + opt3Start },
         { buffer: timerSoundBuf, startSec: segStartTime + timerStart, maxDurationSec: timerCountdown, volume: 0.85, fadeOutSec: 0.15 },
-        { buffer: correctSoundBuf, startSec: segStartTime + revealStart, volume: 0.95 },
+        { buffer: correctSoundBuf, startSec: segStartTime + revealStart, maxDurationSec: revealDuration, volume: 0.95, fadeOutSec: 0.1 },
         { buffer: corrAudio.buffer, startSec: segStartTime + corrSpeechStart }
       );
 
@@ -3797,13 +3797,8 @@ async function startBulletproofVideoGeneration() {
       // 1. Question (Directly visible)
       const qAnimProgress = 1.0;
 
-      // 2. Canva Pan Animation for Options
-      const panDuration = 0.45;
-      const optStarts = [activeSeg.opt0Start, activeSeg.opt1Start, activeSeg.opt2Start, activeSeg.opt3Start];
-      const optsPanProgress = optStarts.map((start) => {
-        if (localElapsed < start) return 0.0;
-        return Math.min(1.0, (localElapsed - start) / panDuration);
-      });
+      // 2. Options are directly visible right from the start like Question
+      const optsPanProgress = [1.0, 1.0, 1.0, 1.0];
 
       // 3. 5-second countdown timer
       let timerProgress = 0;
