@@ -88,86 +88,153 @@
             </div>
           </div>
 
-          <!-- 1. Topic / Type -->
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <label class="block text-xs font-semibold text-slate-600">
-                Enter Type
-              </label>
+          <!-- Multi-Question Header & Add Button -->
+          <div class="flex items-center justify-between bg-amber-50/70 border border-amber-200/80 p-2.5 rounded-xl">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-amber-950 uppercase tracking-wider">
+                Questions ({{ quizList.length }})
+              </span>
+              <span v-if="quizList.length > 1" class="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
+                Multi-Video Mode
+              </span>
             </div>
-            <input 
-              v-model="quiz.category"
-              type="text" 
-              placeholder="Enter Type Here"
-              class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all"
-            />
-          </div> 
-
-          <!-- 2. Question -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-             Enter Question
-            </label>
-            <textarea 
-              v-model="quiz.question"
-              rows="3" 
-              placeholder="Enter Question Here"
-              class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all resize-none"
-            ></textarea>
+            <button
+              type="button"
+              @click="addQuestion"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-xs cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              <span>Add Question</span>
+            </button>
           </div>
 
-          <!-- 3. Options (1, 2, 3, 4) & Right Answer Selector -->
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between">
-              <label class="block text-xs font-semibold text-slate-600">
-                Enter Options
-              </label>
-              <span class="text-xs font-medium text-amber-600 select-none">Click letter to set correct</span>
-            </div>
-
+          <!-- All Questions Stacked Vertically (Ek ke niche ek) -->
+          <div class="space-y-4">
             <div 
-              v-for="(opt, idx) in quiz.options" 
-              :key="idx"
-              @click="quiz.correctOption = idx + 1"
-              class="flex items-center gap-2.5 p-2 rounded-xl border transition-all cursor-pointer"
-              :class="quiz.correctOption === idx + 1 ? 'bg-emerald-50/50 border-emerald-400 ring-1 ring-emerald-300' : 'bg-white border-slate-200 hover:border-slate-300'"
+              v-for="(qItem, qIdx) in quizList" 
+              :key="qItem.id || qIdx"
+              @click="setActiveQuestion(qIdx)"
+              class="bg-white border rounded-2xl p-3.5 transition-all space-y-3 relative shadow-2xs"
+              :class="activeQuestionIndex === qIdx ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200 hover:border-slate-300'"
             >
-              <!-- Left Letter Badge (A, B, C, D) with checkmark on selected -->
-              <button
-                type="button"
-                @click.stop="quiz.correctOption = idx + 1"
-                class="w-9 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all select-none border cursor-pointer"
-                :class="quiz.correctOption === idx + 1 
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-extrabold' 
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
-              >
-                <span v-if="quiz.correctOption === idx + 1" class="flex items-center gap-1 font-bold">
-                  <span>✓</span><span>{{ ['A','B','C','D'][idx] }}</span>
-                </span>
-                <span v-else>{{ ['A','B','C','D'][idx] }}</span>
-              </button>
+              <!-- Question Header (Number, Canvas Indicator, + and - buttons) -->
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <span 
+                    class="w-6 h-6 rounded-lg flex items-center justify-center font-extrabold text-xs"
+                    :class="activeQuestionIndex === qIdx ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 text-slate-700'"
+                  >
+                    #{{ qIdx + 1 }}
+                  </span>
+                  <span class="text-xs font-bold text-slate-800">Question {{ qIdx + 1 }}</span>
+                  <span 
+                    v-if="activeQuestionIndex === qIdx" 
+                    class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"
+                  >
+                    Canvas
+                  </span>
+                </div>
 
-              <!-- Option Text Input -->
-              <input 
-                v-model="quiz.options[idx]"
-                type="text" 
-                :placeholder="'Option ' + ['A','B','C','D'][idx]"
-                @click.stop
-                class="flex-1 bg-transparent border-none text-sm text-slate-900 placeholder-slate-400 outline-none px-1"
-              />
+                <!-- Action Buttons: Add (+) and Delete (-) -->
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    @click.stop="addQuestionAfter(qIdx)"
+                    class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-sm font-extrabold transition-all cursor-pointer active:scale-95"
+                    title="Add Question Below"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    @click.stop="removeQuestion(qIdx)"
+                    :disabled="quizList.length <= 1"
+                    class="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-extrabold transition-all cursor-pointer active:scale-95"
+                    :class="quizList.length <= 1 ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400 border border-slate-200' : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200'"
+                    title="Delete Question"
+                  >
+                    −
+                  </button>
+                </div>
+              </div>
 
-              <!-- Right-Side Text Button: 'Correct' when selected, 'Mark' when unselected -->
-              <button 
-                type="button"
-                @click.stop="quiz.correctOption = idx + 1"
-                class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 select-none cursor-pointer border active:scale-95"
-                :class="quiz.correctOption === idx + 1 
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs' 
-                  : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'"
-                :title="'Mark Option ' + ['A','B','C','D'][idx] + ' as Correct'"
-              >
-                {{ quiz.correctOption === idx + 1 ? 'Correct' : 'Mark' }}
-              </button>
+              <!-- 1. Topic / Type -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Enter Type</label>
+                <input 
+                  v-model="qItem.category"
+                  @focus="setActiveQuestion(qIdx)"
+                  type="text" 
+                  placeholder="Enter Type / Category Here"
+                  class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all"
+                />
+              </div> 
+
+              <!-- 2. Question -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Enter Question</label>
+                <textarea 
+                  v-model="qItem.question"
+                  @focus="setActiveQuestion(qIdx)"
+                  rows="2" 
+                  placeholder="Enter Question Here"
+                  class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all resize-none"
+                ></textarea>
+              </div>
+
+              <!-- 3. Options (A, B, C, D) & Right Answer Selector -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] font-semibold text-slate-600">Enter Options</label>
+                  <span class="text-[10px] font-medium text-amber-600 select-none">Click letter to set correct</span>
+                </div>
+
+                <div 
+                  v-for="(opt, optIdx) in qItem.options" 
+                  :key="optIdx"
+                  @click="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                  class="flex items-center gap-2 p-1.5 rounded-xl border transition-all cursor-pointer"
+                  :class="qItem.correctOption === optIdx + 1 ? 'bg-emerald-50/50 border-emerald-400 ring-1 ring-emerald-300' : 'bg-white border-slate-200 hover:border-slate-300'"
+                >
+                  <!-- Left Letter Badge (A, B, C, D) with checkmark on selected -->
+                  <button
+                    type="button"
+                    @click.stop="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                    class="w-8 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all select-none border cursor-pointer"
+                    :class="qItem.correctOption === optIdx + 1 
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-extrabold' 
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                  >
+                    <span v-if="qItem.correctOption === optIdx + 1" class="flex items-center gap-1 font-bold">
+                      <span>✓</span><span>{{ ['A','B','C','D'][optIdx] }}</span>
+                    </span>
+                    <span v-else>{{ ['A','B','C','D'][optIdx] }}</span>
+                  </button>
+
+                  <!-- Option Text Input -->
+                  <input 
+                    v-model="qItem.options[optIdx]"
+                    @focus="setActiveQuestion(qIdx)"
+                    type="text" 
+                    :placeholder="'Option ' + ['A','B','C','D'][optIdx]"
+                    @click.stop
+                    class="flex-1 bg-transparent border-none text-sm text-slate-900 placeholder-slate-400 outline-none px-1"
+                  />
+
+                  <!-- Right-Side Text Button: 'Correct' when selected, 'Mark' when unselected -->
+                  <button 
+                    type="button"
+                    @click.stop="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                    class="px-2 py-0.5 rounded-lg text-xs font-bold transition-all shrink-0 select-none cursor-pointer border active:scale-95"
+                    :class="qItem.correctOption === optIdx + 1 
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs' 
+                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'"
+                    :title="'Mark Option ' + ['A','B','C','D'][optIdx] + ' as Correct'"
+                  >
+                    {{ qItem.correctOption === optIdx + 1 ? 'Correct' : 'Mark' }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -888,80 +955,136 @@
         <!-- MOBILE-ONLY CONTROLS (Switched via Bottom Nav)  -->
         <!-- ============================================== -->
         <div class="block lg:hidden space-y-4">
-          <!-- MOBILE TAB 1: Q/A (Type, Question, Options) -->
-          <div v-show="mobileTab === 'qa'" class="space-y-4">
-            <!-- Type -->
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Enter Type</label>
-              <input 
-                v-model="quiz.category"
-                type="text" 
-                placeholder="Enter Type Here"
-                class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none"
-              />
-            </div> 
-
-            <!-- Question -->
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Enter Question</label>
-              <textarea 
-                v-model="quiz.question"
-                rows="2" 
-                placeholder="Enter Question Here"
-                class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none resize-none"
-              ></textarea>
+          <!-- MOBILE TAB 1: Q/A (Multi-Question List) -->
+          <div v-show="mobileTab === 'qa'" class="space-y-3">
+            <!-- Mobile Action Bar -->
+            <div class="flex items-center justify-between bg-amber-50/80 border border-amber-200/80 p-2.5 rounded-xl">
+              <span class="text-xs font-bold text-amber-950 uppercase">Questions ({{ quizList.length }})</span>
+              <button
+                type="button"
+                @click="addQuestion"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-white shadow-xs cursor-pointer flex items-center gap-1 active:scale-95"
+              >
+                + Add Question
+              </button>
             </div>
 
-            <!-- Options -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="block text-xs font-semibold text-slate-600">Enter Options</label>
-                <span class="text-[11px] font-medium text-amber-600 select-none">Click letter to set correct</span>
-              </div>
-
+            <!-- Mobile Questions Stacked -->
+            <div class="space-y-3">
               <div 
-                v-for="(opt, idx) in quiz.options" 
-                :key="'mob-' + idx"
-                @click="quiz.correctOption = idx + 1"
-                class="flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer"
-                :class="quiz.correctOption === idx + 1 ? 'bg-emerald-50/50 border-emerald-400 ring-1 ring-emerald-300' : 'bg-white border-slate-200'"
+                v-for="(qItem, qIdx) in quizList" 
+                :key="'mob-q-' + (qItem.id || qIdx)"
+                @click="setActiveQuestion(qIdx)"
+                class="bg-white border rounded-2xl p-3 space-y-2.5 relative shadow-2xs"
+                :class="activeQuestionIndex === qIdx ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200'"
               >
-                <!-- Left Letter Badge with checkmark on selected -->
-                <button
-                  type="button"
-                  @click.stop="quiz.correctOption = idx + 1"
-                  class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all select-none border cursor-pointer"
-                  :class="quiz.correctOption === idx + 1 
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-extrabold' 
-                    : 'bg-white text-slate-700 border-slate-200'"
-                >
-                  <span v-if="quiz.correctOption === idx + 1" class="flex items-center gap-0.5">
-                    <span>✓</span><span>{{ ['A','B','C','D'][idx] }}</span>
-                  </span>
-                  <span v-else>{{ ['A','B','C','D'][idx] }}</span>
-                </button>
+                <!-- Card Header -->
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                  <div class="flex items-center gap-1.5">
+                    <span 
+                      class="w-5 h-5 rounded-md flex items-center justify-center font-extrabold text-[11px]"
+                      :class="activeQuestionIndex === qIdx ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-700'"
+                    >
+                      #{{ qIdx + 1 }}
+                    </span>
+                    <span class="text-xs font-bold text-slate-800">Question {{ qIdx + 1 }}</span>
+                    <span 
+                      v-if="activeQuestionIndex === qIdx" 
+                      class="text-[9px] font-bold text-amber-600 bg-amber-50 px-1 py-0.2 rounded border border-amber-200"
+                    >
+                      Canvas
+                    </span>
+                  </div>
 
-                <!-- Option text input -->
-                <input 
-                  v-model="quiz.options[idx]"
-                  type="text" 
-                  :placeholder="'Option ' + ['A','B','C','D'][idx]"
-                  @click.stop
-                  class="flex-1 bg-transparent border-none text-sm text-slate-900 placeholder-slate-400 outline-none px-1"
-                />
+                  <div class="flex items-center gap-1">
+                    <button
+                      type="button"
+                      @click.stop="addQuestionAfter(qIdx)"
+                      class="w-6 h-6 rounded-md bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center text-xs font-extrabold active:scale-95"
+                      title="Add Below"
+                    >+</button>
+                    <button
+                      type="button"
+                      @click.stop="removeQuestion(qIdx)"
+                      :disabled="quizList.length <= 1"
+                      class="w-6 h-6 rounded-md flex items-center justify-center text-xs font-extrabold active:scale-95"
+                      :class="quizList.length <= 1 ? 'opacity-30 bg-slate-100 text-slate-400 border border-slate-200' : 'bg-rose-50 text-rose-600 border border-rose-200'"
+                      title="Delete"
+                    >−</button>
+                  </div>
+                </div>
 
-                <!-- Right-side button: 'Correct' when selected, 'Mark' when unselected -->
-                <button 
-                  type="button"
-                  @click.stop="quiz.correctOption = idx + 1"
-                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 select-none cursor-pointer border active:scale-95"
-                  :class="quiz.correctOption === idx + 1 
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs' 
-                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'"
-                  :title="'Mark Option ' + ['A','B','C','D'][idx] + ' as Correct'"
-                >
-                  {{ quiz.correctOption === idx + 1 ? 'Correct' : 'Mark' }}
-                </button>
+                <!-- Type -->
+                <div>
+                  <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Enter Type</label>
+                  <input 
+                    v-model="qItem.category"
+                    @focus="setActiveQuestion(qIdx)"
+                    type="text" 
+                    placeholder="Enter Type Here"
+                    class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 outline-none"
+                  />
+                </div> 
+
+                <!-- Question -->
+                <div>
+                  <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Enter Question</label>
+                  <textarea 
+                    v-model="qItem.question"
+                    @focus="setActiveQuestion(qIdx)"
+                    rows="2" 
+                    placeholder="Enter Question Here"
+                    class="w-full bg-slate-50 border border-slate-200 focus:border-amber-500 focus:bg-white rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 outline-none resize-none"
+                  ></textarea>
+                </div>
+
+                <!-- Options -->
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[10px] font-semibold text-slate-600">Enter Options</label>
+                    <span class="text-[10px] text-amber-600 select-none">Click letter to set correct</span>
+                  </div>
+
+                  <div 
+                    v-for="(opt, optIdx) in qItem.options" 
+                    :key="'mob-' + qIdx + '-' + optIdx"
+                    @click="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                    class="flex items-center gap-1.5 p-1.5 rounded-xl border transition-all cursor-pointer"
+                    :class="qItem.correctOption === optIdx + 1 ? 'bg-emerald-50/50 border-emerald-400 ring-1 ring-emerald-300' : 'bg-white border-slate-200'"
+                  >
+                    <button
+                      type="button"
+                      @click.stop="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all select-none border cursor-pointer"
+                      :class="qItem.correctOption === optIdx + 1 
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-extrabold' 
+                        : 'bg-white text-slate-700 border-slate-200'"
+                    >
+                      <span v-if="qItem.correctOption === optIdx + 1">✓ {{ ['A','B','C','D'][optIdx] }}</span>
+                      <span v-else>{{ ['A','B','C','D'][optIdx] }}</span>
+                    </button>
+
+                    <input 
+                      v-model="qItem.options[optIdx]"
+                      @focus="setActiveQuestion(qIdx)"
+                      type="text" 
+                      :placeholder="'Option ' + ['A','B','C','D'][optIdx]"
+                      @click.stop
+                      class="flex-1 bg-transparent border-none text-xs text-slate-900 placeholder-slate-400 outline-none px-1"
+                    />
+
+                    <button 
+                      type="button"
+                      @click.stop="qItem.correctOption = optIdx + 1; setActiveQuestion(qIdx)"
+                      class="px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all shrink-0 select-none cursor-pointer border active:scale-95"
+                      :class="qItem.correctOption === optIdx + 1 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs' 
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'"
+                    >
+                      {{ qItem.correctOption === optIdx + 1 ? 'Correct' : 'Mark' }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1653,9 +1776,23 @@
 
       <!-- RIGHT PANEL: Live Preview & Canvas (Top on Mobile, Sticky on Desktop) -->
       <section class="order-1 lg:order-2 lg:col-span-7 lg:sticky lg:top-20 flex flex-col items-center gap-4 bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-sm">
-        <div class="w-full flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Preview</span>
+        <div class="w-full flex items-center justify-between border-b border-slate-100 pb-2.5 flex-wrap gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Preview:</span>
+            <!-- Multi-Question Navigation Pills -->
+            <div v-if="quizList.length > 1" class="flex items-center gap-1 overflow-x-auto py-0.5">
+              <button
+                v-for="(_, idx) in quizList"
+                :key="'preview-pill-' + idx"
+                type="button"
+                @click="setActiveQuestion(idx)"
+                class="px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                :class="activeQuestionIndex === idx ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Q{{ idx + 1 }}
+              </button>
+            </div>
+            <span v-else class="text-[11px] font-bold text-slate-400">Question 1</span>
           </div>
           <div class="text-xs flex items-center gap-2">
             <button @click="resetPositions" class="text-slate-500 hover:text-amber-600 text-xs font-medium cursor-pointer">Reset Positions</button>
@@ -1981,18 +2118,96 @@ async function changeAspectRatio(r: AspectRatio) {
   renderCanvas(-1, 4, 0.0, false, false, 1.0);
 }
 
-// Quiz Model
-const quiz = reactive({
-  category: 'सामान्य विज्ञान',
-  question: 'वायुमंडलीय दाब मापने वाला यंत्र कौन-सा है?',
-  options: [
-    'बैरोमीटर',
-    'थर्मामीटर',
-    'स्पीडोमीटर',
-    'कैलोरीमीटर'
-  ],
-  correctOption: 1
+// Multi-Question Model & Persistence
+export interface QuizQuestion {
+  id: string;
+  category: string;
+  question: string;
+  options: string[];
+  correctOption: number;
+}
+
+const savedQuizListJson = (() => {
+  try {
+    const raw = localStorage.getItem('quiz_multi_list');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (_) {}
+  return null;
+})();
+
+const quizList = reactive<QuizQuestion[]>(
+  savedQuizListJson || [
+    {
+      id: 'q_default',
+      category: 'सामान्य विज्ञान',
+      question: 'वायुमंडलीय दाब मापने वाला यंत्र कौन-सा है?',
+      options: [
+        'बैरोमीटर',
+        'थर्मामीटर',
+        'स्पीडोमीटर',
+        'कैलोरीमीटर'
+      ],
+      correctOption: 1
+    }
+  ]
+);
+
+const activeQuestionIndex = ref(0);
+
+// Active question computed getter for convenience and backwards-compatibility
+const quiz = computed(() => {
+  if (activeQuestionIndex.value < 0 || activeQuestionIndex.value >= quizList.length) {
+    activeQuestionIndex.value = 0;
+  }
+  return quizList[activeQuestionIndex.value] || quizList[0];
 });
+
+watch(
+  quizList,
+  (newList) => {
+    try {
+      localStorage.setItem('quiz_multi_list', JSON.stringify(newList));
+    } catch (_) {}
+  },
+  { deep: true }
+);
+
+function addQuestion() {
+  quizList.push({
+    id: 'q_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    category: quizList[quizList.length - 1]?.category || 'सामान्य विज्ञान',
+    question: '',
+    options: ['', '', '', ''],
+    correctOption: 1
+  });
+  activeQuestionIndex.value = quizList.length - 1;
+}
+
+function addQuestionAfter(idx: number) {
+  quizList.splice(idx + 1, 0, {
+    id: 'q_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    category: quizList[idx]?.category || 'सामान्य विज्ञान',
+    question: '',
+    options: ['', '', '', ''],
+    correctOption: 1
+  });
+  activeQuestionIndex.value = idx + 1;
+}
+
+function removeQuestion(idx: number) {
+  if (quizList.length <= 1) return;
+  quizList.splice(idx, 1);
+  if (activeQuestionIndex.value >= quizList.length) {
+    activeQuestionIndex.value = Math.max(0, quizList.length - 1);
+  }
+}
+
+function setActiveQuestion(idx: number) {
+  activeQuestionIndex.value = idx;
+}
 
 // 5 Inbuilt Shapes for Option Letter Badge
 type OptionShape = 'circle' | 'rounded-square' | 'square' | 'hexagon' | 'diamond';
@@ -2554,7 +2769,7 @@ watch(() => bgConfig.color, (newColor) => {
 
 // Watch inputs to re-render in real-time
 watch(
-  [quiz, style, offsets, watermark, logoConfig, bgConfig, selectedRatio],
+  [quizList, activeQuestionIndex, style, offsets, watermark, logoConfig, bgConfig, selectedRatio],
   async () => {
     await nextTick();
     renderCanvas(-1, 4, 0.0, false, false, 1.0);
@@ -2563,15 +2778,19 @@ watch(
 );
 
 function resetToExactSample() {
-  quiz.category = 'सामान्य विज्ञान';
-  quiz.question = 'वायुमंडलीय दाब मापने वाला यंत्र कौन-सा है?';
-  quiz.options = [
-    'बैरोमीटर',
-    'थर्मामीटर',
-    'स्पीडोमीटर',
-    'कैलोरीमीटर'
-  ];
-  quiz.correctOption = 1;
+  quizList.splice(0, quizList.length, {
+    id: 'q_default',
+    category: 'सामान्य विज्ञान',
+    question: 'वायुमंडलीय दाब मापने वाला यंत्र कौन-सा है?',
+    options: [
+      'बैरोमीटर',
+      'थर्मामीटर',
+      'स्पीडोमीटर',
+      'कैलोरीमीटर'
+    ],
+    correctOption: 1
+  });
+  activeQuestionIndex.value = 0;
   style.typeFontSize = 46;
   style.questionFontSize = 50;
   style.optionFontSize = 36;
@@ -2624,7 +2843,8 @@ async function testVoiceAudio() {
   isPlayingAudioTest.value = true;
   try {
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const testText = `${quiz.question}`;
+    const curQ = quizList[activeQuestionIndex.value] || quizList[0];
+    const testText = `${curQ.question || 'प्रश्न'}`;
     const { buffer } = await fetchTtsAudioBuffer(testText, audioCtx);
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
@@ -2842,10 +3062,12 @@ function renderCanvasToCtx(
   animProgress: number = 0.0,
   revealCorrect: boolean = false,
   showTimer: boolean = false,
-  pulseScale: number = 1.0
+  pulseScale: number = 1.0,
+  targetQuiz?: QuizQuestion
 ) {
   const W = targetCanvas.width;
   const H = targetCanvas.height;
+  const curQuiz = targetQuiz || quizList[activeQuestionIndex.value] || quizList[0];
 
   // 1. Canvas Background (Solid Color or Uploaded Image)
   if (bgConfig.type === 'image' && bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
@@ -2910,7 +3132,7 @@ function renderCanvasToCtx(
   const isLandscape = selectedRatio.value === '16:9';
 
   // 3. Top-Left Category (Type Heading) - Independent Dragging Anywhere!
-  const categoryText = (quiz.category || 'सामान्य विज्ञान').trim();
+  const categoryText = (curQuiz.category || 'सामान्य विज्ञान').trim();
   const typeBaseX = 64 + offsets.typeX;
   const typeBaseY = (isReel ? 120 : isLandscape ? 40 : 55) + offsets.typeY;
 
@@ -2950,7 +3172,7 @@ function renderCanvasToCtx(
   const questionBaseY = (isReel ? 420 : isLandscape ? 180 : 220) + offsets.questionY;
   const questionMaxW = isLandscape ? 1600 : 920;
 
-  const fullQuestion = quiz.question || 'प्रश्न यहाँ दिखाई देगा...';
+  const fullQuestion = curQuiz.question || 'प्रश्न यहाँ दिखाई देगा...';
 
   ctx.save();
   ctx.fillStyle = style.questionColor || '#000000';
@@ -3007,7 +3229,7 @@ function renderCanvasToCtx(
 
   for (let i = 0; i < 4; i++) {
     const panP = normalizedOpts[i] !== undefined ? normalizedOpts[i] : 1.0;
-    const optionText = quiz.options[i] || `Option ${letters[i]}`;
+    const optionText = curQuiz.options[i] || `Option ${letters[i]}`;
     
     const optLines = wrapText(ctx, optionText, maxTextAvailableWidth);
     const lineH = style.optionFontSize * 1.25;
@@ -3015,7 +3237,7 @@ function renderCanvasToCtx(
     const contentH = optLines.length * lineH;
     const optH = Math.max(isReel ? 84 : 72, contentH + 24);
 
-    const isCorrect = (quiz.correctOption === i + 1);
+    const isCorrect = (curQuiz.correctOption === i + 1);
     const isHighlighted = revealCorrect && isCorrect;
 
     if (panP > 0.001) {
@@ -3329,12 +3551,12 @@ function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
   return new Blob([arrayBuffer], { type: 'audio/wav' });
 }
 
-// ----------------- TOP-CLASS ZERO-LAG VIDEO GENERATOR (MULTI-RATIO) -----------------
+// ----------------- TOP-CLASS MULTI-QUESTION VIDEO COMPILATION GENERATOR -----------------
 async function startBulletproofVideoGeneration() {
   if (isGeneratingVideo.value) return;
   isGeneratingVideo.value = true;
   videoProgress.value = 5;
-  currentVideoStatus.value = `Step 1/3: Fetching Voice Clips for ${selectedRatio.value}...`;
+  currentVideoStatus.value = `Step 1/3: Preparing Audio for ${quizList.length} Question(s)...`;
 
   const canvas = previewCanvas.value;
   if (!canvas) {
@@ -3347,55 +3569,133 @@ async function startBulletproofVideoGeneration() {
     
     const letters = ['A', 'B', 'C', 'D'];
     const letterNamesHindi = ['ए', 'बी', 'सी', 'डी'];
-    const correctLetterHindi = letterNamesHindi[quiz.correctOption - 1];
-    const correctOptionText = quiz.options[quiz.correctOption - 1];
 
-    const questionSpeechText = `${quiz.question}`;
-    const optTexts = [
-      `ऑप्शन ए: ${quiz.options[0]}`,
-      `ऑप्शन बी: ${quiz.options[1]}`,
-      `ऑप्शन सी: ${quiz.options[2]}`,
-      `ऑप्शन डी: ${quiz.options[3]}`
-    ];
-    const correctSpeechText = `सही उत्तर है: ऑप्शन ${correctLetterHindi}, ${correctOptionText}`;
-
-    const [qAudio, opt0Audio, opt1Audio, opt2Audio, opt3Audio, corrAudio, timerSoundBuf, correctSoundBuf] = await Promise.all([
-      fetchTtsAudioBuffer(questionSpeechText, audioCtx),
-      fetchTtsAudioBuffer(optTexts[0], audioCtx),
-      fetchTtsAudioBuffer(optTexts[1], audioCtx),
-      fetchTtsAudioBuffer(optTexts[2], audioCtx),
-      fetchTtsAudioBuffer(optTexts[3], audioCtx),
-      fetchTtsAudioBuffer(correctSpeechText, audioCtx),
+    // Preload sound effects once
+    const [timerSoundBuf, correctSoundBuf] = await Promise.all([
       fetchAudioFileBuffer('/timer-sound.wav', audioCtx),
       fetchAudioFileBuffer('/correct-answer-sound.wav', audioCtx)
     ]);
 
-    videoProgress.value = 20;
-    currentVideoStatus.value = `Step 2/3: Encoding ${currentDimensions.value.w}×${currentDimensions.value.h} Frames...`;
+    interface QuestionSegment {
+      index: number;
+      quizItem: QuizQuestion;
+      startTime: number;
+      duration: number;
+      contentDuration: number;
+      pauseAfter: number;
+      opt0Start: number;
+      opt1Start: number;
+      opt2Start: number;
+      opt3Start: number;
+      timerStart: number;
+      timerCountdown: number;
+      timerEnd: number;
+      revealStart: number;
+    }
 
-    const qDuration = Math.max(3.0, qAudio.duration + 0.3);
-    const opt0Dur = opt0Audio.duration + 0.25;
-    const opt1Dur = opt1Audio.duration + 0.25;
-    const opt2Dur = opt2Audio.duration + 0.25;
-    const opt3Dur = opt3Audio.duration + 0.35;
+    const segments: QuestionSegment[] = [];
+    let currentTimeline = 0;
 
-    const opt0Start = qDuration;
-    const opt1Start = opt0Start + opt0Dur;
-    const opt2Start = opt1Start + opt1Dur;
-    const opt3Start = opt2Start + opt2Dur;
-    const optionsEnd = opt3Start + opt3Dur;
+    const audioPlacementList: Array<{
+      buffer: AudioBuffer | null;
+      startSec: number;
+      maxDurationSec?: number;
+      volume?: number;
+      fadeOutSec?: number;
+    }> = [];
 
-    const timerCountdown = 5.0; // 5s timer
-    const timerStart = optionsEnd;
-    const timerEnd = timerStart + timerCountdown;
+    // 1. Generate Voice and build segments for all questions sequentially
+    for (let qIdx = 0; qIdx < quizList.length; qIdx++) {
+      const qItem = quizList[qIdx];
+      const qNum = qIdx + 1;
+      currentVideoStatus.value = `Step 1/3: Generating Audio for Question ${qNum}/${quizList.length}...`;
+      videoProgress.value = Math.round(5 + (qIdx / quizList.length) * 15);
 
-    const revealStart = timerEnd;
-    const corrSoundLead = 1.25; // Correct answer chime plays first, then speech follows
-    const corrSpeechStart = revealStart + corrSoundLead;
-    const revealDuration = corrSoundLead + corrAudio.duration + 1.2;
-    const totalDuration = revealStart + revealDuration;
+      const correctLetterHindi = letterNamesHindi[qItem.correctOption - 1] || 'ए';
+      const correctOptionText = qItem.options[qItem.correctOption - 1] || '';
 
-    // Master Audio Buffer
+      const questionSpeechText = `${qItem.question || 'प्रश्न ' + qNum}`;
+      const optTexts = [
+        `ऑप्शन ए: ${qItem.options[0] || 'ऑप्शन ए'}`,
+        `ऑप्शन बी: ${qItem.options[1] || 'ऑप्शन बी'}`,
+        `ऑप्शन सी: ${qItem.options[2] || 'ऑप्शन सी'}`,
+        `ऑप्शन डी: ${qItem.options[3] || 'ऑप्शन डी'}`
+      ];
+      const correctSpeechText = `सही उत्तर है: ऑप्शन ${correctLetterHindi}, ${correctOptionText}`;
+
+      const [qAudio, opt0Audio, opt1Audio, opt2Audio, opt3Audio, corrAudio] = await Promise.all([
+        fetchTtsAudioBuffer(questionSpeechText, audioCtx),
+        fetchTtsAudioBuffer(optTexts[0], audioCtx),
+        fetchTtsAudioBuffer(optTexts[1], audioCtx),
+        fetchTtsAudioBuffer(optTexts[2], audioCtx),
+        fetchTtsAudioBuffer(optTexts[3], audioCtx),
+        fetchTtsAudioBuffer(correctSpeechText, audioCtx)
+      ]);
+
+      const qDuration = Math.max(3.0, qAudio.duration + 0.3);
+      const opt0Dur = opt0Audio.duration + 0.25;
+      const opt1Dur = opt1Audio.duration + 0.25;
+      const opt2Dur = opt2Audio.duration + 0.25;
+      const opt3Dur = opt3Audio.duration + 0.35;
+
+      const opt0Start = qDuration;
+      const opt1Start = opt0Start + opt0Dur;
+      const opt2Start = opt1Start + opt1Dur;
+      const opt3Start = opt2Start + opt2Dur;
+      const optionsEnd = opt3Start + opt3Dur;
+
+      const timerCountdown = 5.0; // 5s timer
+      const timerStart = optionsEnd;
+      const timerEnd = timerStart + timerCountdown;
+
+      const revealStart = timerEnd;
+      const corrSoundLead = 1.25;
+      const corrSpeechStart = revealStart + corrSoundLead;
+      const revealDuration = corrSoundLead + corrAudio.duration + 1.2;
+      const contentDuration = revealStart + revealDuration;
+
+      // 2-second pause after question if multiple questions exist and not last
+      const isLastQuestion = (qIdx === quizList.length - 1);
+      const pauseAfter = isLastQuestion ? 0.6 : 2.0;
+      const segmentDuration = contentDuration + pauseAfter;
+
+      const segStartTime = currentTimeline;
+
+      segments.push({
+        index: qIdx,
+        quizItem: qItem,
+        startTime: segStartTime,
+        duration: segmentDuration,
+        contentDuration,
+        pauseAfter,
+        opt0Start,
+        opt1Start,
+        opt2Start,
+        opt3Start,
+        timerStart,
+        timerCountdown,
+        timerEnd,
+        revealStart
+      });
+
+      // Schedule Audio Clips for this question segment
+      audioPlacementList.push(
+        { buffer: qAudio.buffer, startSec: segStartTime + 0.2 },
+        { buffer: opt0Audio.buffer, startSec: segStartTime + opt0Start },
+        { buffer: opt1Audio.buffer, startSec: segStartTime + opt1Start },
+        { buffer: opt2Audio.buffer, startSec: segStartTime + opt2Start },
+        { buffer: opt3Audio.buffer, startSec: segStartTime + opt3Start },
+        { buffer: timerSoundBuf, startSec: segStartTime + timerStart, maxDurationSec: timerCountdown, volume: 0.85, fadeOutSec: 0.15 },
+        { buffer: correctSoundBuf, startSec: segStartTime + revealStart, volume: 0.95 },
+        { buffer: corrAudio.buffer, startSec: segStartTime + corrSpeechStart }
+      );
+
+      currentTimeline += segmentDuration;
+    }
+
+    const totalDuration = currentTimeline;
+
+    // Master Audio Buffer for entire compilation video
     const masterAudioBuffer = audioCtx.createBuffer(
       2,
       Math.ceil(totalDuration * audioCtx.sampleRate),
@@ -3431,32 +3731,20 @@ async function startBulletproofVideoGeneration() {
       }
     }
 
-    // 1. Question speech
-    copyAudioToMaster(qAudio.buffer, 0.2);
-
-    // 2. Options speech
-    copyAudioToMaster(opt0Audio.buffer, opt0Start);
-    copyAudioToMaster(opt1Audio.buffer, opt1Start);
-    copyAudioToMaster(opt2Audio.buffer, opt2Start);
-    copyAudioToMaster(opt3Audio.buffer, opt3Start);
-
-    // 3. Timer sound (plays while timer counts down from 5s to 0s)
-    copyAudioToMaster(timerSoundBuf, timerStart, timerCountdown, 0.85, 0.15);
-
-    // 4. Correct answer sound effect (plays right when correct answer reveals)
-    copyAudioToMaster(correctSoundBuf, revealStart, undefined, 0.95);
-
-    // 5. Correct answer speech ("then vo bole")
-    copyAudioToMaster(corrAudio.buffer, corrSpeechStart);
+    for (const item of audioPlacementList) {
+      copyAudioToMaster(item.buffer, item.startSec, item.maxDurationSec, item.volume, item.fadeOutSec);
+    }
 
     const wavBlob = audioBufferToWavBlob(masterAudioBuffer);
 
     // Multi-Resolution WebCodecs Encoding
     const fps = 30;
     const totalFrames = Math.round(totalDuration * fps);
-    const fullQLen = (quiz.question || '').length;
     const videoW = currentDimensions.value.w;
     const videoH = currentDimensions.value.h;
+
+    videoProgress.value = 22;
+    currentVideoStatus.value = `Step 2/3: Encoding ${quizList.length} Questions (${Math.round(totalDuration)}s)...`;
 
     const muxer = new Muxer({
       target: new ArrayBufferTarget(),
@@ -3481,7 +3769,7 @@ async function startBulletproofVideoGeneration() {
       framerate: fps
     });
 
-    // Offscreen render canvas to completely decouple from UI & keep main thread smooth
+    // Offscreen render canvas
     const offCanvas = document.createElement('canvas');
     offCanvas.width = videoW;
     offCanvas.height = videoH;
@@ -3489,44 +3777,54 @@ async function startBulletproofVideoGeneration() {
     if (!offCtx) throw new Error('Offscreen canvas context failed');
 
     for (let f = 0; f < totalFrames; f++) {
-      // Gentle Hardware Throttle: Keep encode queue <= 2 so device RAM & CPU are always cool and free
       while (videoEncoder.encodeQueueSize > 2) {
         await new Promise((r) => setTimeout(r, 16));
       }
 
       const elapsed = f / fps;
 
-      // 1. Question (Directly visible immediately, zero animation)
+      // Find current active segment for this timestamp
+      let activeSeg = segments[segments.length - 1];
+      for (let s = 0; s < segments.length; s++) {
+        if (elapsed >= segments[s].startTime && elapsed < segments[s].startTime + segments[s].duration) {
+          activeSeg = segments[s];
+          break;
+        }
+      }
+
+      const localElapsed = Math.max(0, elapsed - activeSeg.startTime);
+
+      // 1. Question (Directly visible)
       const qAnimProgress = 1.0;
 
-      // 2. Canva Pan Animation for Options (Slide in from Left → with ease-out cubic & fade-in)
+      // 2. Canva Pan Animation for Options
       const panDuration = 0.45;
-      const optStarts = [opt0Start, opt1Start, opt2Start, opt3Start];
+      const optStarts = [activeSeg.opt0Start, activeSeg.opt1Start, activeSeg.opt2Start, activeSeg.opt3Start];
       const optsPanProgress = optStarts.map((start) => {
-        if (elapsed < start) return 0.0;
-        return Math.min(1.0, (elapsed - start) / panDuration);
+        if (localElapsed < start) return 0.0;
+        return Math.min(1.0, (localElapsed - start) / panDuration);
       });
 
       // 3. 5-second countdown timer
       let timerProgress = 0;
       let isTimerActive = false;
-      if (elapsed >= timerStart && elapsed < timerEnd) {
+      if (localElapsed >= activeSeg.timerStart && localElapsed < activeSeg.timerEnd) {
         isTimerActive = true;
-        timerProgress = (elapsed - timerStart) / timerCountdown;
+        timerProgress = (localElapsed - activeSeg.timerStart) / activeSeg.timerCountdown;
       }
 
-      // 4. Correct Answer Reveal & Rich Pulse
+      // 4. Correct Answer Reveal & Pulse
       let isRevealed = false;
       let pulseScale = 1.0;
-      if (elapsed >= revealStart) {
+      if (localElapsed >= activeSeg.revealStart) {
         isRevealed = true;
-        const revElapsed = elapsed - revealStart;
+        const revElapsed = localElapsed - activeSeg.revealStart;
         if (revElapsed < 1.2) {
           pulseScale = 1.0 + 0.04 * Math.sin(revElapsed * Math.PI * 3);
         }
       }
 
-      // Render exclusively to background offCanvas (Zero UI stutter, phone stays completely cool)
+      // Render exclusively to background offCanvas with current active question!
       renderCanvasToCtx(
         offCtx,
         offCanvas,
@@ -3535,7 +3833,8 @@ async function startBulletproofVideoGeneration() {
         timerProgress,
         isRevealed,
         isTimerActive,
-        pulseScale
+        pulseScale,
+        activeSeg.quizItem
       );
 
       const timestampMicroseconds = Math.round((f * 1_000_000) / fps);
@@ -3544,8 +3843,7 @@ async function startBulletproofVideoGeneration() {
       videoEncoder.encode(videoFrame, { keyFrame: isKeyFrame });
       videoFrame.close();
 
-      // Relax main thread: Give browser a breather every frame or two so phone never heats or lags
-      videoProgress.value = Math.min(85, Math.round(20 + (f / totalFrames) * 65));
+      videoProgress.value = Math.min(85, Math.round(22 + (f / totalFrames) * 63));
       if (f % 2 === 0) {
         await new Promise((r) => setTimeout(r, 8));
       }
@@ -3577,7 +3875,7 @@ async function startBulletproofVideoGeneration() {
     generatedVideoUrl.value = URL.createObjectURL(finalMp4Blob);
 
     videoProgress.value = 100;
-    currentVideoStatus.value = `${selectedRatio.value} Video Ready!`;
+    currentVideoStatus.value = `${selectedRatio.value} Multi-Video Ready (${quizList.length} Qs)!`;
     isGeneratingVideo.value = false;
     playVideoModal.value = true;
     renderCanvas(-1, 4, 0.0, false, false, 1.0);
