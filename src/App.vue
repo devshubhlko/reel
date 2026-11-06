@@ -3019,16 +3019,6 @@ function renderCanvasToCtx(
         ctx.translate(cx, cy);
         ctx.scale(pulseScale, pulseScale);
         ctx.translate(-cx, -cy);
-
-        // Highlight pill background for correct answer only
-        ctx.fillStyle = '#dcfce7';
-        roundRect(ctx, optX, currentY, optW, optH, optH / 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#16a34a';
-        ctx.lineWidth = 3;
-        roundRect(ctx, optX, currentY, optW, optH, optH / 2);
-        ctx.stroke();
       }
 
       // Draw Option Shape (Circle [default], Squircle, Square, Hexagon, Diamond)
@@ -3052,7 +3042,7 @@ function renderCanvasToCtx(
 
       // Render Option Name / Text (Aligned cleanly to left, customizable color)
       ctx.fillStyle = isHighlighted ? '#15803d' : (style.optionColor || '#000000');
-      ctx.font = `700 ${style.optionFontSize}px ${style.fontFamily}`;
+      ctx.font = `${isHighlighted ? '800' : '700'} ${style.optionFontSize}px ${style.fontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
 
