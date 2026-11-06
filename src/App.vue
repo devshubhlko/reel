@@ -2884,14 +2884,24 @@ function renderCanvasToCtx(
     ctx.strokeRect(bw / 2, bw / 2, W - bw, H - bw);
   }
 
-  // 2.5 Optional Center Watermark Logo (Active ONLY when YES/enabled)
+  // 2.5 Optional Center Watermark Logo (Active ONLY when YES/enabled, aspect-ratio preserved)
   if (watermark.enabled && logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
     ctx.save();
     ctx.globalAlpha = Math.max(0.01, Math.min(1.0, watermark.opacity));
-    const wmSize = watermark.size;
-    const wmX = (W - wmSize) / 2 + watermark.offsetX;
-    const wmY = (H - wmSize) / 2 + watermark.offsetY;
-    ctx.drawImage(logoImg, wmX, wmY, wmSize, wmSize);
+    const maxDim = watermark.size;
+    const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
+    let wmW = maxDim;
+    let wmH = maxDim;
+    if (aspect > 1) {
+      wmW = maxDim;
+      wmH = maxDim / aspect;
+    } else {
+      wmH = maxDim;
+      wmW = maxDim * aspect;
+    }
+    const wmX = (W - wmW) / 2 + watermark.offsetX;
+    const wmY = (H - wmH) / 2 + watermark.offsetY;
+    ctx.drawImage(logoImg, wmX, wmY, wmW, wmH);
     ctx.restore();
   }
 
