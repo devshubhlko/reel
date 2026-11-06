@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans overflow-x-hidden">
+  <div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans overflow-x-clip">
     <!-- Header Navbar -->
     <header class="border-b border-slate-200 bg-white/90 backdrop-blur px-3 sm:px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-xs">
       <div class="flex items-center gap-3">
@@ -23,7 +23,7 @@
     </header>
 
     <!-- Main Workspace -->
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 p-3 sm:p-6 pb-20 lg:pb-6 max-w-[1700px] w-full mx-auto items-start">
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 p-3 sm:p-6 pb-20 lg:pb-6 max-w-[1700px] w-full mx-auto items-start lg:items-stretch">
       
       <!-- LEFT PANEL: Controls & Form (5 Cols) -->
       <section class="order-2 lg:order-1 lg:col-span-5 flex flex-col gap-4 bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-sm h-fit">
@@ -113,6 +113,7 @@
             <div 
               v-for="(qItem, qIdx) in quizList" 
               :key="qItem.id || qIdx"
+              :id="'question-card-' + qIdx"
               @click="setActiveQuestion(qIdx)"
               class="bg-white border rounded-2xl p-3.5 transition-all space-y-3 relative shadow-2xs"
               :class="activeQuestionIndex === qIdx ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200 hover:border-slate-300'"
@@ -974,6 +975,7 @@
               <div 
                 v-for="(qItem, qIdx) in quizList" 
                 :key="'mob-q-' + (qItem.id || qIdx)"
+                :id="'mob-question-card-' + qIdx"
                 @click="setActiveQuestion(qIdx)"
                 class="bg-white border rounded-2xl p-3 space-y-2.5 relative shadow-2xs"
                 :class="activeQuestionIndex === qIdx ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200'"
@@ -1775,29 +1777,30 @@
       </section> 
 
       <!-- RIGHT PANEL: Live Preview & Canvas (Top on Mobile, Sticky on Desktop) -->
-      <section class="order-1 lg:order-2 lg:col-span-7 lg:sticky lg:top-20 flex flex-col items-center gap-4 bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-sm">
-        <div class="w-full flex items-center justify-between border-b border-slate-100 pb-2.5 flex-wrap gap-2">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Preview:</span>
-            <!-- Multi-Question Navigation Pills -->
-            <div v-if="quizList.length > 1" class="flex items-center gap-1 overflow-x-auto py-0.5">
-              <button
-                v-for="(_, idx) in quizList"
-                :key="'preview-pill-' + idx"
-                type="button"
-                @click="setActiveQuestion(idx)"
-                class="px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer"
-                :class="activeQuestionIndex === idx ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-              >
-                Q{{ idx + 1 }}
-              </button>
+      <div class="order-1 lg:order-2 lg:col-span-7 h-full">
+        <section class="lg:sticky lg:top-20 flex flex-col items-center gap-4 bg-white border border-slate-200/90 p-4 sm:p-5 rounded-2xl shadow-sm">
+          <div class="w-full flex items-center justify-between border-b border-slate-100 pb-2.5 flex-wrap gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Preview:</span>
+              <!-- Multi-Question Navigation Pills -->
+              <div v-if="quizList.length > 1" class="flex items-center gap-1 overflow-x-auto py-0.5">
+                <button
+                  v-for="(_, idx) in quizList"
+                  :key="'preview-pill-' + idx"
+                  type="button"
+                  @click="selectQuestionAndScroll(idx)"
+                  class="px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer"
+                  :class="activeQuestionIndex === idx ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                >
+                  Q{{ idx + 1 }}
+                </button>
+              </div>
+              <span v-else class="text-[11px] font-bold text-slate-400">Question 1</span>
             </div>
-            <span v-else class="text-[11px] font-bold text-slate-400">Question 1</span>
+            <div class="text-xs flex items-center gap-2">
+              <button @click="resetPositions" class="text-slate-500 hover:text-amber-600 text-xs font-medium cursor-pointer">Reset Positions</button>
+            </div>
           </div>
-          <div class="text-xs flex items-center gap-2">
-            <button @click="resetPositions" class="text-slate-500 hover:text-amber-600 text-xs font-medium cursor-pointer">Reset Positions</button>
-          </div>
-        </div>
 
         <!-- Interactive Canvas Container with Dynamic Aspect Ratio -->
         <div 
@@ -1889,6 +1892,7 @@
           </div>
         </div>
       </section>
+    </div>
 
     </main>
 
@@ -2088,7 +2092,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 
 // Aspect Ratios: 1:1, 9:16, 16:9
@@ -2205,8 +2209,57 @@ function removeQuestion(idx: number) {
   }
 }
 
+let isManualScrolling = false;
+
 function setActiveQuestion(idx: number) {
   activeQuestionIndex.value = idx;
+}
+
+function selectQuestionAndScroll(idx: number) {
+  setActiveQuestion(idx);
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  const targetId = isDesktop ? `question-card-${idx}` : `mob-question-card-${idx}`;
+  const el = document.getElementById(targetId);
+  if (el) {
+    isManualScrolling = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      isManualScrolling = false;
+    }, 600);
+  }
+}
+
+function onWindowScroll() {
+  if (isManualScrolling) return;
+  // If user is actively typing in an input or textarea, don't auto-switch question
+  const activeEl = document.activeElement;
+  if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+    return;
+  }
+
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  const prefix = isDesktop ? 'question-card-' : 'mob-question-card-';
+  const targetLine = isDesktop ? 240 : 350;
+  let bestIdx = activeQuestionIndex.value;
+  let minDistance = Infinity;
+
+  for (let idx = 0; idx < quizList.length; idx++) {
+    const el = document.getElementById(`${prefix}${idx}`);
+    if (!el) continue;
+    const rect = el.getBoundingClientRect();
+    const cardCenter = (rect.top + rect.bottom) / 2;
+    const dist = Math.abs(cardCenter - targetLine);
+    if (rect.bottom > 80 && rect.top < window.innerHeight - 80) {
+      if (dist < minDistance) {
+        minDistance = dist;
+        bestIdx = idx;
+      }
+    }
+  }
+
+  if (bestIdx !== activeQuestionIndex.value && bestIdx >= 0 && bestIdx < quizList.length) {
+    activeQuestionIndex.value = bestIdx;
+  }
 }
 
 // 5 Inbuilt Shapes for Option Letter Badge
@@ -2716,7 +2769,25 @@ const previewCanvas = ref<HTMLCanvasElement | null>(null);
 // Preloaded Assets
 let logoImg: HTMLImageElement | null = null;
 
+function waitForImg(img: HTMLImageElement | null): Promise<void> {
+  if (!img) return Promise.resolve();
+  if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+  return new Promise((resolve) => {
+    const onDone = () => resolve();
+    img.addEventListener('load', onDone, { once: true });
+    img.addEventListener('error', onDone, { once: true });
+    setTimeout(onDone, 800);
+  });
+}
+
 onMounted(async () => {
+  // Listen for window scroll to synchronize preview with questions
+  window.addEventListener('scroll', onWindowScroll, { passive: true });
+
+  // 0. Render canvas IMMEDIATELY on first frame so it is NEVER blank on page load or reload
+  await nextTick();
+  renderCanvas(-1, 4, 0.0, false, false, 1.0);
+
   // 1. Restore Custom Logo if previously saved in IndexedDB
   const savedLogo = await getAssetFromStorage('custom_logo');
   if (savedLogo) {
@@ -2730,7 +2801,6 @@ onMounted(async () => {
 
   // 2. Restore Background Image if previously saved in IndexedDB
   const savedBg = await getAssetFromStorage('bg_image');
-  let bgLoadedPromise: Promise<void> = Promise.resolve();
   if (savedBg) {
     bgConfig.imageUrl = savedBg;
     const savedType = localStorage.getItem('quiz_bg_type');
@@ -2738,10 +2808,6 @@ onMounted(async () => {
       bgConfig.type = 'image';
     }
     bgImg = new Image();
-    bgLoadedPromise = new Promise((res) => {
-      bgImg!.onload = () => res();
-      bgImg!.onerror = () => res();
-    });
     bgImg.src = savedBg;
   }
 
@@ -2751,13 +2817,22 @@ onMounted(async () => {
     bgConfig.color = savedColor;
   }
 
-  await Promise.all([
-    new Promise((resolve) => { logoImg!.onload = resolve; logoImg!.onerror = resolve; }),
-    bgLoadedPromise,
-    document.fonts.ready
+  // Safely wait for images & fonts without blocking or hanging
+  await Promise.allSettled([
+    waitForImg(logoImg),
+    waitForImg(bgImg),
+    Promise.race([
+      document.fonts?.ready ?? Promise.resolve(),
+      new Promise((resolve) => setTimeout(resolve, 1000))
+    ])
   ]);
 
+  // Re-render once images and fonts are loaded
   renderCanvas(-1, 4, 0.0, false, false, 1.0);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onWindowScroll);
 });
 
 // Watch bg color to persist in localStorage
