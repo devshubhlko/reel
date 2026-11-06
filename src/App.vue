@@ -1486,18 +1486,13 @@ const previewCanvas = ref<HTMLCanvasElement | null>(null);
 
 // Preloaded Assets
 let logoImg: HTMLImageElement | null = null;
-let bottomImg: HTMLImageElement | null = null;
 
 onMounted(async () => {
   logoImg = new Image();
   logoImg.src = '/logo.png';
 
-  bottomImg = new Image();
-  bottomImg.src = '/video-bottom-style.png';
-
   await Promise.all([
     new Promise((resolve) => { logoImg!.onload = resolve; logoImg!.onerror = resolve; }),
-    new Promise((resolve) => { bottomImg!.onload = resolve; bottomImg!.onerror = resolve; }),
     document.fonts.ready
   ]);
 
@@ -1928,20 +1923,6 @@ function renderCanvasToCtx(
     }
 
     currentY += optH + optGap;
-  }
-
-  // 8. Bottom Style Silhouette (Zero extra white top margin)
-  if (bottomImg && bottomImg.complete && bottomImg.naturalWidth > 0) {
-    ctx.save();
-    const bottomW = W - bw * 2;
-    const bannerMaxH = isLandscape ? 120 : Math.round((175 / 1024) * bottomW);
-    const bottomH = Math.min(bannerMaxH, Math.round((175 / 1024) * bottomW));
-    const bottomX = bw;
-    const bottomY = H - bottomH - bw;
-
-    // Crop top 59px white margin directly from source image (1024x234 -> 1024x175)
-    ctx.drawImage(bottomImg, 0, 59, bottomImg.naturalWidth, 175, bottomX, bottomY, bottomW, bottomH);
-    ctx.restore();
   }
 }
 
