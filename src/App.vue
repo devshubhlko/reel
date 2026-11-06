@@ -423,13 +423,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                  <input 
-                    type="file" 
-                    ref="logoFileInput" 
-                    accept="image/*" 
-                    @change="onLogoFileChange" 
-                    class="hidden" 
-                  />
                   <button 
                     type="button" 
                     @click="triggerLogoUpload" 
@@ -492,7 +485,7 @@
               <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                 <button
                   type="button"
-                  @click="bgConfig.type = 'color'"
+                  @click="setBgType('color')"
                   class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
                   :class="bgConfig.type === 'color' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 >
@@ -500,7 +493,7 @@
                 </button>
                 <button
                   type="button"
-                  @click="bgConfig.type = 'image'"
+                  @click="setBgType('image')"
                   class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
                   :class="bgConfig.type === 'image' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 >
@@ -558,13 +551,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                  <input 
-                    type="file" 
-                    ref="bgFileInput" 
-                    accept="image/*" 
-                    @change="onBgFileChange" 
-                    class="hidden" 
-                  />
                   <button 
                     type="button" 
                     @click="triggerBgUpload" 
@@ -1159,13 +1145,13 @@
                 <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                   <button
                     type="button"
-                    @click="bgConfig.type = 'color'"
+                    @click="setBgType('color')"
                     class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
                     :class="bgConfig.type === 'color' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'"
                   >Color</button>
                   <button
                     type="button"
-                    @click="bgConfig.type = 'image'"
+                    @click="setBgType('image')"
                     class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer"
                     :class="bgConfig.type === 'image' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600'"
                   >Image</button>
@@ -1593,6 +1579,22 @@
       </div>
     </div>
 
+    <!-- Global hidden file inputs for background image & custom logo -->
+    <input 
+      type="file" 
+      ref="bgFileInput" 
+      accept="image/*" 
+      @change="onBgFileChange" 
+      class="hidden" 
+    />
+    <input 
+      type="file" 
+      ref="logoFileInput" 
+      accept="image/*" 
+      @change="onLogoFileChange" 
+      class="hidden" 
+    />
+
   </div>
 </template>
 
@@ -1847,6 +1849,93 @@ async function fetchGoogleFontsList() {
   }
 }
 
+// =============================================================================
+// IndexedDB Storage Helper for High-Res Persistent Media Assets (Background & Logo)
+// =============================================================================
+const DB_NAME = 'QuizStudioAssetsDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'media_assets';
+
+function openAssetDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      return reject(new Error('IndexedDB not supported in this browser'));
+    }
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveAssetToStorage(key: string, dataUrl: string): Promise<void> {
+  try {
+    const db = await openAssetDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.put(dataUrl, key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+      tx.oncomplete = () => db.close();
+    });
+  } catch (err) {
+    console.warn(`IndexedDB save error for ${key}:`, err);
+    try {
+      localStorage.setItem(`quiz_asset_${key}`, dataUrl);
+    } catch (_) {}
+  }
+}
+
+async function getAssetFromStorage(key: string): Promise<string | null> {
+  try {
+    const db = await openAssetDb();
+    return await new Promise<string | null>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(key);
+      req.onsuccess = () => {
+        db.close();
+        resolve((req.result as string) || null);
+      };
+      req.onerror = () => {
+        db.close();
+        resolve(null);
+      };
+    });
+  } catch (err) {
+    try {
+      return localStorage.getItem(`quiz_asset_${key}`) || null;
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+async function deleteAssetFromStorage(key: string): Promise<void> {
+  try {
+    const db = await openAssetDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+      tx.oncomplete = () => db.close();
+    });
+  } catch (err) {
+    console.warn(`IndexedDB delete error for ${key}:`, err);
+  }
+  try {
+    localStorage.removeItem(`quiz_asset_${key}`);
+  } catch (_) {}
+}
+
 // Top Logo Model (Upload, Toggle YES/NO, Custom Size, Draggable)
 const logoConfig = reactive({
   show: true,           // Default: YES
@@ -1860,15 +1949,19 @@ function triggerLogoUpload() {
   logoFileInput.value?.click();
 }
 
-function onLogoFileChange(e: Event) {
+async function onLogoFileChange(e: Event) {
   const target = e.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     const result = event.target?.result as string;
     if (!result) return;
+    
+    // Persist custom logo in IndexedDB (replaces previous logo)
+    await saveAssetToStorage('custom_logo', result);
+
     logoConfig.customUrl = result;
     const img = new Image();
     img.onload = () => {
@@ -1878,9 +1971,11 @@ function onLogoFileChange(e: Event) {
     img.src = result;
   };
   reader.readAsDataURL(file);
+  target.value = '';
 }
 
-function resetLogoToDefault() {
+async function resetLogoToDefault() {
+  await deleteAssetFromStorage('custom_logo');
   logoConfig.customUrl = '';
   const img = new Image();
   img.onload = () => {
@@ -1900,21 +1995,39 @@ const bgConfig = reactive({
 let bgImg: HTMLImageElement | null = null;
 const bgFileInput = ref<HTMLInputElement | null>(null);
 
+function setBgType(type: 'color' | 'image') {
+  bgConfig.type = type;
+  try {
+    localStorage.setItem('quiz_bg_type', type);
+  } catch (_) {}
+  if (type === 'image' && !bgConfig.imageUrl) {
+    triggerBgUpload();
+  }
+}
+
 function triggerBgUpload() {
   bgFileInput.value?.click();
 }
 
-function onBgFileChange(e: Event) {
+async function onBgFileChange(e: Event) {
   const target = e.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     const result = event.target?.result as string;
     if (!result) return;
+    
+    // Save image to IndexedDB (cleanly overwrites/replaces previously stored background image)
+    await saveAssetToStorage('bg_image', result);
+
     bgConfig.imageUrl = result;
     bgConfig.type = 'image';
+    try {
+      localStorage.setItem('quiz_bg_type', 'image');
+    } catch (_) {}
+
     const img = new Image();
     img.onload = () => {
       bgImg = img;
@@ -1923,12 +2036,18 @@ function onBgFileChange(e: Event) {
     img.src = result;
   };
   reader.readAsDataURL(file);
+  target.value = '';
 }
 
-function removeBgImage() {
+async function removeBgImage() {
+  // Completely delete background image from persistent storage
+  await deleteAssetFromStorage('bg_image');
   bgConfig.imageUrl = '';
   bgConfig.type = 'color';
   bgImg = null;
+  try {
+    localStorage.setItem('quiz_bg_type', 'color');
+  } catch (_) {}
   renderCanvas(-1, 4, 0.0, false, false, 1.0);
 }
 
@@ -1983,15 +2102,54 @@ const previewCanvas = ref<HTMLCanvasElement | null>(null);
 let logoImg: HTMLImageElement | null = null;
 
 onMounted(async () => {
-  logoImg = new Image();
-  logoImg.src = '/logo.png';
+  // 1. Restore Custom Logo if previously saved in IndexedDB
+  const savedLogo = await getAssetFromStorage('custom_logo');
+  if (savedLogo) {
+    logoConfig.customUrl = savedLogo;
+    logoImg = new Image();
+    logoImg.src = savedLogo;
+  } else {
+    logoImg = new Image();
+    logoImg.src = '/logo.png';
+  }
+
+  // 2. Restore Background Image if previously saved in IndexedDB
+  const savedBg = await getAssetFromStorage('bg_image');
+  let bgLoadedPromise: Promise<void> = Promise.resolve();
+  if (savedBg) {
+    bgConfig.imageUrl = savedBg;
+    const savedType = localStorage.getItem('quiz_bg_type');
+    if (savedType === 'image') {
+      bgConfig.type = 'image';
+    }
+    bgImg = new Image();
+    bgLoadedPromise = new Promise((res) => {
+      bgImg!.onload = () => res();
+      bgImg!.onerror = () => res();
+    });
+    bgImg.src = savedBg;
+  }
+
+  // Restore saved solid bg color if previously chosen
+  const savedColor = localStorage.getItem('quiz_bg_color');
+  if (savedColor) {
+    bgConfig.color = savedColor;
+  }
 
   await Promise.all([
     new Promise((resolve) => { logoImg!.onload = resolve; logoImg!.onerror = resolve; }),
+    bgLoadedPromise,
     document.fonts.ready
   ]);
 
   renderCanvas(-1, 4, 0.0, false, false, 1.0);
+});
+
+// Watch bg color to persist in localStorage
+watch(() => bgConfig.color, (newColor) => {
+  try {
+    localStorage.setItem('quiz_bg_color', newColor);
+  } catch (_) {}
 });
 
 // Watch inputs to re-render in real-time
