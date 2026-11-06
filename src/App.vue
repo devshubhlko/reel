@@ -2330,10 +2330,17 @@ async function deleteAssetFromStorage(key: string): Promise<void> {
 }
 
 // Top Logo Model (Upload, Toggle YES/NO, Custom Size, Draggable)
+const savedLogoShow = localStorage.getItem('quiz_logo_show');
 const logoConfig = reactive({
-  show: true,           // Default: YES
+  show: savedLogoShow !== null ? savedLogoShow === 'true' : false, // Default: NO (side logo removed, watermark kept)
   size: 160,            // Default: 160px
   customUrl: ''
+});
+
+watch(() => logoConfig.show, (newVal) => {
+  try {
+    localStorage.setItem('quiz_logo_show', String(newVal));
+  } catch (_) {}
 });
 
 const logoFileInput = ref<HTMLInputElement | null>(null);
