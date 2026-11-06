@@ -344,7 +344,7 @@
                 <label class="block text-[11px] font-bold text-amber-900">
                   Choose Element
                 </label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                   <button
                     type="button"
                     @click="activeDragTarget = 'type'"
@@ -371,6 +371,16 @@
                   </button>
                   <button
                     type="button"
+                    @click="activeDragTarget = 'logo'"
+                    class="px-2 py-1.5 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer"
+                    :class="activeDragTarget === 'logo' ? 'bg-amber-500 text-white border-amber-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                    :disabled="!logoConfig.show"
+                    :title="!logoConfig.show ? 'Logo is OFF' : ''"
+                  >
+                    Logo
+                  </button>
+                  <button
+                    type="button"
                     @click="activeDragTarget = 'watermark'"
                     class="px-2 py-1.5 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer"
                     :class="activeDragTarget === 'watermark' ? 'bg-amber-500 text-white border-amber-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
@@ -379,6 +389,94 @@
                   >
                     Watermark
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4.5 Logo Controls (Upload, Visibility, Size) -->
+          <div class="border-t border-slate-100 pt-3 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <span>Logo</span>
+              </h3>
+              <!-- Yes/No Toggle: Default YES -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="logoConfig.show" class="sr-only peer" />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                <span class="ml-2 text-slate-700 text-xs font-bold">{{ logoConfig.show ? 'YES' : 'NO' }}</span>
+              </label>
+            </div>
+
+            <!-- Logo Options Panel (Shown when YES/Active) -->
+            <div v-if="logoConfig.show" class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5 transition-all">
+              <!-- Upload / Change Logo Button -->
+              <div class="bg-white/90 border border-amber-200/70 p-2.5 rounded-xl flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                    <img :src="logoConfig.customUrl || '/logo.png'" alt="Logo Preview" class="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <span class="block text-xs font-bold text-slate-800">Post Logo</span>
+                    <span class="text-[10px] text-slate-500">{{ logoConfig.customUrl ? 'Custom uploaded logo' : 'Default logo' }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <input 
+                    type="file" 
+                    ref="logoFileInput" 
+                    accept="image/*" 
+                    @change="onLogoFileChange" 
+                    class="hidden" 
+                  />
+                  <button 
+                    type="button" 
+                    @click="triggerLogoUpload" 
+                    class="py-1.5 px-2.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span>Upload Logo</span>
+                  </button>
+                  <button 
+                    v-if="logoConfig.customUrl" 
+                    type="button" 
+                    @click="resetLogoToDefault" 
+                    class="py-1.5 px-2 rounded-lg text-[11px] font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-all cursor-pointer"
+                    title="Reset to default logo"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Logo Size Slider -->
+              <div class="bg-white/80 border border-amber-200/70 p-2.5 rounded-xl">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1.5">
+                  <span class="font-bold">Logo Size</span>
+                  <span class="text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">{{ logoConfig.size }}px</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button 
+                    type="button" 
+                    @click="logoConfig.size = Math.max(50, logoConfig.size - 10)" 
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-base shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer select-none"
+                    title="-10px"
+                  >−</button>
+                  <input 
+                    v-model.number="logoConfig.size"
+                    type="range" 
+                    min="50" 
+                    max="400" 
+                    step="5"
+                    class="w-full"
+                  />
+                  <button 
+                    type="button" 
+                    @click="logoConfig.size = Math.min(400, logoConfig.size + 10)" 
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-base shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer select-none"
+                    title="+10px"
+                  >+</button>
                 </div>
               </div>
             </div>
@@ -607,8 +705,8 @@
               <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Size To Adjust</span>
             </div>
 
-            <!-- 4-Pill Size Target Selector -->
-            <div class="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-center">
+            <!-- 5-Pill Size Target Selector -->
+            <div class="grid grid-cols-5 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 text-center">
               <button 
                 type="button" 
                 @click="activeSizeTarget = 'border'"
@@ -640,6 +738,14 @@
                 :class="activeSizeTarget === 'option' ? 'bg-amber-500 text-white shadow-xs font-extrabold' : 'text-slate-600 hover:text-slate-900'"
               >
                 Option
+              </button>
+              <button 
+                type="button" 
+                @click="activeSizeTarget = 'logo'"
+                class="py-2 px-1 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                :class="activeSizeTarget === 'logo' ? 'bg-amber-500 text-white shadow-xs font-extrabold' : 'text-slate-600 hover:text-slate-900'"
+              >
+                Logo
               </button>
             </div>
 
@@ -756,6 +862,34 @@
                   >+</button>
                 </div>
               </div>
+
+              <!-- Logo Size Slider -->
+              <div v-show="activeSizeTarget === 'logo'">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-2">
+                  <span class="font-bold">Logo Size</span>
+                  <span class="text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">{{ logoConfig.size }}px</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button 
+                    type="button" 
+                    @click="logoConfig.size = Math.max(50, logoConfig.size - 10)" 
+                    class="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-lg shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer select-none"
+                  >−</button>
+                  <input 
+                    v-model.number="logoConfig.size"
+                    type="range" 
+                    min="50" 
+                    max="400" 
+                    step="5"
+                    class="w-full"
+                  />
+                  <button 
+                    type="button" 
+                    @click="logoConfig.size = Math.min(400, logoConfig.size + 10)" 
+                    class="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-lg shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer select-none"
+                  >+</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -801,7 +935,7 @@
 
               <div v-if="enableDrag" class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-1.5">
                 <label class="block text-[11px] font-bold text-amber-900">Choose Element</label>
-                <div class="grid grid-cols-2 gap-1.5">
+                <div class="grid grid-cols-3 gap-1.5">
                   <button
                     type="button"
                     @click="activeDragTarget = 'type'"
@@ -822,11 +956,92 @@
                   >Options</button>
                   <button
                     type="button"
+                    @click="activeDragTarget = 'logo'"
+                    class="px-2 py-1.5 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer"
+                    :class="activeDragTarget === 'logo' ? 'bg-amber-500 text-white border-amber-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200'"
+                    :disabled="!logoConfig.show"
+                  >Logo</button>
+                  <button
+                    type="button"
                     @click="activeDragTarget = 'watermark'"
                     class="px-2 py-1.5 rounded-lg text-xs font-bold border transition-all text-center cursor-pointer"
                     :class="activeDragTarget === 'watermark' ? 'bg-amber-500 text-white border-amber-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200'"
                     :disabled="!watermark.enabled"
                   >Watermark</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logo Controls -->
+            <div class="border-t border-slate-100 pt-3 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider">Logo</h3>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="logoConfig.show" class="sr-only peer" />
+                  <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  <span class="ml-2 text-slate-700 text-xs font-bold">{{ logoConfig.show ? 'YES' : 'NO' }}</span>
+                </label>
+              </div>
+
+              <div v-if="logoConfig.show" class="bg-amber-50/50 border border-amber-200/80 p-3 rounded-xl space-y-2.5">
+                <!-- Upload / Change Logo Button -->
+                <div class="bg-white/90 border border-amber-200/70 p-2 rounded-xl flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                      <img :src="logoConfig.customUrl || '/logo.png'" alt="Logo Preview" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <span class="block text-xs font-bold text-slate-800">Post Logo</span>
+                      <span class="text-[10px] text-slate-500">{{ logoConfig.customUrl ? 'Custom' : 'Default' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1.5">
+                    <button 
+                      type="button" 
+                      @click="triggerLogoUpload" 
+                      class="py-1.5 px-2.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                      <span>Upload</span>
+                    </button>
+                    <button 
+                      v-if="logoConfig.customUrl" 
+                      type="button" 
+                      @click="resetLogoToDefault" 
+                      class="py-1.5 px-2 rounded-lg text-[11px] font-medium text-slate-500 hover:text-rose-600 border border-slate-200"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Logo Size Slider -->
+                <div class="bg-white/80 border border-amber-200/70 p-2 rounded-xl">
+                  <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1">
+                    <span class="font-bold">Logo Size</span>
+                    <span class="text-amber-600 font-mono font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">{{ logoConfig.size }}px</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button 
+                      type="button" 
+                      @click="logoConfig.size = Math.max(50, logoConfig.size - 10)" 
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-base shrink-0 active:scale-90"
+                    >−</button>
+                    <input 
+                      v-model.number="logoConfig.size"
+                      type="range" 
+                      min="50" 
+                      max="400" 
+                      step="5"
+                      class="w-full"
+                    />
+                    <button 
+                      type="button" 
+                      @click="logoConfig.size = Math.min(400, logoConfig.size + 10)" 
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-base shrink-0 active:scale-90"
+                    >+</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1201,7 +1416,7 @@ const activeTab = ref<'question' | 'settings'>('question');
 
 // Mobile Navigation State ('size' | 'qa' | 'settings')
 const mobileTab = ref<'size' | 'qa' | 'settings'>('qa');
-const activeSizeTarget = ref<'border' | 'type' | 'question' | 'option'>('type');
+const activeSizeTarget = ref<'border' | 'type' | 'question' | 'option' | 'logo'>('type');
 
 const currentDimensions = computed(() => {
   if (selectedRatio.value === '9:16') {
@@ -1439,6 +1654,49 @@ async function fetchGoogleFontsList() {
   }
 }
 
+// Top Logo Model (Upload, Toggle YES/NO, Custom Size, Draggable)
+const logoConfig = reactive({
+  show: true,           // Default: YES
+  size: 160,            // Default: 160px
+  customUrl: ''
+});
+
+const logoFileInput = ref<HTMLInputElement | null>(null);
+
+function triggerLogoUpload() {
+  logoFileInput.value?.click();
+}
+
+function onLogoFileChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const result = event.target?.result as string;
+    if (!result) return;
+    logoConfig.customUrl = result;
+    const img = new Image();
+    img.onload = () => {
+      logoImg = img;
+      renderCanvas(-1, 4, 0.0, false, false, 1.0);
+    };
+    img.src = result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetLogoToDefault() {
+  logoConfig.customUrl = '';
+  const img = new Image();
+  img.onload = () => {
+    logoImg = img;
+    renderCanvas(-1, 4, 0.0, false, false, 1.0);
+  };
+  img.src = '/logo.png';
+}
+
 // Watermark Logo Model
 const watermark = reactive({
   enabled: true,
@@ -1461,11 +1719,13 @@ const offsets = reactive({
   questionX: 0,
   questionY: 0,
   optionsX: 0,
-  optionsY: 0
+  optionsY: 0,
+  logoX: 0,
+  logoY: 0
 });
 
 const enableDrag = ref(false);
-type DragTarget = 'type' | 'question' | 'options' | 'watermark';
+type DragTarget = 'type' | 'question' | 'options' | 'logo' | 'watermark';
 const activeDragTarget = ref<DragTarget>('type');
 const isDragging = ref(false);
 let dragStartX = 0;
@@ -1501,7 +1761,7 @@ onMounted(async () => {
 
 // Watch inputs to re-render in real-time
 watch(
-  [quiz, style, offsets, watermark, selectedRatio],
+  [quiz, style, offsets, watermark, logoConfig, selectedRatio],
   async () => {
     await nextTick();
     renderCanvas(-1, 4, 0.0, false, false, 1.0);
@@ -1533,6 +1793,10 @@ function resetPositions() {
   offsets.questionY = 0;
   offsets.optionsX = 0;
   offsets.optionsY = 0;
+  offsets.logoX = 0;
+  offsets.logoY = 0;
+  watermark.offsetX = 0;
+  watermark.offsetY = 0;
 }
 
 // ----------------- GOOGLE TTS AUDIO GENERATOR -----------------
@@ -1769,13 +2033,25 @@ function renderCanvasToCtx(
   ctx.fillText(categoryText, typeBaseX, typeBaseY);
   ctx.restore();
 
-  // 4. Top-Right Logo
-  if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+  // 4. Logo (Top-Right Default, Drag Anywhere, Configurable Size & Visibility)
+  if (logoConfig.show && logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
     ctx.save();
-    const logoW = isLandscape ? 140 : 160;
-    const logoH = logoW;
-    const logoX = W - logoW - (isLandscape ? 40 : 55);
-    const logoY = isReel ? 95 : isLandscape ? 25 : 32;
+    const maxDim = logoConfig.size;
+    const aspect = logoImg.naturalWidth / logoImg.naturalHeight;
+    let logoW = maxDim;
+    let logoH = maxDim;
+    if (aspect > 1) {
+      logoW = maxDim;
+      logoH = maxDim / aspect;
+    } else {
+      logoH = maxDim;
+      logoW = maxDim * aspect;
+    }
+
+    const baseLogoX = W - logoW - (isLandscape ? 40 : 55);
+    const baseLogoY = isReel ? 95 : isLandscape ? 25 : 32;
+    const logoX = baseLogoX + offsets.logoX;
+    const logoY = baseLogoY + offsets.logoY;
     ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
     ctx.restore();
   }
@@ -1985,6 +2261,9 @@ function startDragging(clientX: number, clientY: number) {
   } else if (activeDragTarget.value === 'options') {
     initialTargetX = offsets.optionsX;
     initialTargetY = offsets.optionsY;
+  } else if (activeDragTarget.value === 'logo') {
+    initialTargetX = offsets.logoX;
+    initialTargetY = offsets.logoY;
   } else if (activeDragTarget.value === 'watermark') {
     initialTargetX = watermark.offsetX;
     initialTargetY = watermark.offsetY;
@@ -2009,6 +2288,9 @@ function moveDragging(clientX: number, clientY: number) {
   } else if (activeDragTarget.value === 'options') {
     offsets.optionsX = initialTargetX + deltaX;
     offsets.optionsY = initialTargetY + deltaY;
+  } else if (activeDragTarget.value === 'logo') {
+    offsets.logoX = initialTargetX + deltaX;
+    offsets.logoY = initialTargetY + deltaY;
   } else if (activeDragTarget.value === 'watermark') {
     watermark.offsetX = initialTargetX + deltaX;
     watermark.offsetY = initialTargetY + deltaY;
